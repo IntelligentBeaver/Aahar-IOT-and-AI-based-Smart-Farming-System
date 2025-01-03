@@ -1,7 +1,5 @@
-import 'package:aahar_app/common/theme.dart';
 import 'package:aahar_app/providers/theme_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import '';
 import 'package:aahar_app/pages/dashboard_page.dart';
 import 'package:aahar_app/pages/sign_up_page.dart';
 import 'package:aahar_app/pages/wrapper.dart';

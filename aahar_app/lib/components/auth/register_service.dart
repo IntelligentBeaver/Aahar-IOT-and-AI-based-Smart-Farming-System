@@ -1,14 +1,14 @@
 import 'dart:convert';
+import 'package:aahar_app/pages/wrapper.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterService {
-  final String _baseUrl = "http://172.16.1.48:3000/auth/register";
-
+  final String _baseUrlRegister = "http://192.168.80.187:3000/auth/register";
   Future<Map<String, dynamic>> registerUser(
       String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(_baseUrlRegister),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );

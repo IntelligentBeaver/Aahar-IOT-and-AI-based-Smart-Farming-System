@@ -2,12 +2,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginService {
-  final String _baseUrl = "http://172.16.1.48:3000/auth/login";
+  final String _baseUrlLogin = "http://192.168.80.187:3000/auth/login";
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(_baseUrlLogin),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );

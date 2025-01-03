@@ -16,7 +16,8 @@ class DashboardContent extends StatefulWidget {
 }
 
 class _DashboardContentState extends State<DashboardContent> {
-  final String _webSocketUrl = 'ws://172.16.1.48:3000'; // WebSocket server URL
+  final String _webSocketUrl =
+      'ws://192.168.80.187:3000/'; // WebSocket server URL
   late WebSocketChannel _channel;
   Map<String, dynamic> _sensorData = {};
   @override
