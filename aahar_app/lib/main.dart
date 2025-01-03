@@ -8,66 +8,44 @@ import 'package:aahar_app/providers/control_state.dart';
 import 'package:aahar_app/providers/sensor_data_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  // Make sure widgets are initialized before running the app
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(
-        create: (context) {
-          SensorDataProvider();
-        },
-      ),
-      ChangeNotifierProvider(
-        create: (context) => ControlState(),
-      ),
-      ChangeNotifierProvider(
-        create: (context) => ControlProvider(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => ThemeProvider(),
-      )
+      ChangeNotifierProvider(create: (context) => SensorDataProvider()),
+      ChangeNotifierProvider(create: (context) => ControlState()),
+      ChangeNotifierProvider(create: (context) => ControlProvider()),
+      ChangeNotifierProvider(create: (_) => ThemeProvider()),
     ],
-    child: MyApp(),
+    child: MyApp(isLoggedIn: isLoggedIn), // Pass login state to MyApp
   ));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale _locale = Locale('en'); // Default language
-
-  void setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
-  }
-
-  @override
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Aahar App',
-      locale: _locale,
       themeMode: ThemeMode.dark,
       theme: Provider.of<ThemeProvider>(context).currentTheme,
-      supportedLocales: [
-        const Locale('en'),
-        const Locale('hi'),
-        const Locale('ne'),
-      ],
-      localizationsDelegates: [
-        // AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: Wrapper(),
+      home: widget.isLoggedIn ? const DashboardPage() : const Wrapper(),
       routes: {
         '/dashboard_page': (context) => const DashboardPage(),
         '/signup': (context) => const SignUpPage(),

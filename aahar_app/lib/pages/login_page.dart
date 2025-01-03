@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:aahar_app/common/themed_image.dart';
 import 'package:aahar_app/components/auth/login_service.dart';
 import 'package:aahar_app/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -61,6 +61,12 @@ class _LoginPageState extends State<LoginPage> {
     if (result['success']) {
       print("Login successful: ${result['message']}");
       print('Access Token: ${result['data']['accessToken']}');
+
+      // Save login data to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', email);
+      await prefs.setString('accessToken', result['data']['accessToken']);
+      await prefs.setBool('isLoggedIn', true);
       setState(() {
         _isLoading = false; // Stop loading
       });
@@ -81,30 +87,6 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
-  // signIn() async {
-  //   setState(() {
-  //     _isLoading = true; // Start loading
-  //   });
-  //   try {
-  //     await FirebaseAuth.instance.signInWithEmailAndPassword(
-  //         email: _emailController.text, password: _passwordController.text);
-  //     // Navigate to the home screen or next page
-  //     Navigator.pushAndRemoveUntil(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => DashboardPage()),
-  //       (route) => false,
-  //     ); // This ensures all previous routes are removed);
-  //   } on FirebaseAuthException catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       content: Text(e.message ?? 'An error occurred'),
-  //     ));
-  //   } finally {
-  //     setState(() {
-  //       _isLoading = false; // Stop loading
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {

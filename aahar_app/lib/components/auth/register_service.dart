@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:aahar_app/pages/wrapper.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterService {
