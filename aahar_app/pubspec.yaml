@@ -1,0 +1,58 @@
+name: aahar_app
+description: "An IOT and AI based Smart Farming System"
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_chart: ^0.70.0
+  flutter_slidable: ^3.1.2
+  intl: ^0.19.0
+  skeletonizer: ^1.4.2
+  adaptive_theme: ^3.6.0
+  google_nav_bar: ^5.0.7
+  dashed_circular_progress_bar: ^0.0.6
+  provider: ^6.1.2
+  firebase_core: ^3.8.1
+  firebase_auth: ^5.3.4
+  firebase_database: ^11.2.0
+  cloud_firestore: ^5.5.1
+  web_socket_channel: ^3.0.1
+  http: ^1.2.2
+  url_launcher: ^6.3.1
+  # flutter_local_notifications: ^18.0.1
+  permission_handler: ^11.3.1
+  cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.8.0
+  flutter_localization: ^0.3.0
+  liquid_progress_indicator_v2: ^0.5.0
+  animated_toggle_switch: ^0.8.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/Logo-white.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/Logo-black.png"
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/Logo-black.png
+    - assets/Logo-white.png
+    - assets/Logo-t-black.png
+    - assets/Logo-t-white.png
