@@ -5,21 +5,21 @@ import ApiResponse from "../utils/apiResponse.js";
 
 // Create a new farm
 const createFarm = asyncHandler(async (req, res) => {
-  const { address, farmingType, crops, processes, investments, income } =
-    req.body;
+  const { farmingType, crops, processes, investments } = req.body;
 
-  if (!farmingType || !address) {
-    throw new ApiError(400, "Farming type and address are required");
+  // Check if farmingType is provided (required field)
+  if (!farmingType) {
+    throw new ApiError(400, "Farming type is required");
   }
 
+  // Create a new farm, income is omitted since it won't be provided at the start
   const farm = await Farm.create({
     owner: req.user._id,
-    address,
     farmingType,
     crops: crops || [],
     processes: processes || [],
     investments: investments || [],
-    income: income || [],
+    income: [], // Set income to an empty array initially
   });
 
   res.status(201).json(new ApiResponse(201, farm, "Farm created successfully"));
@@ -73,6 +73,24 @@ const updateFarm = asyncHandler(async (req, res) => {
 
   const updatedFields = req.body;
 
+  // Validate income source types
+  if (updatedFields.income) {
+    updatedFields.income.forEach((inc) => {
+      if (
+        ![
+          "Direct Crop Sale",
+          "Wholesale Sale",
+          "Export Income",
+          "Contract Farming",
+          "Seed Sale",
+          "other",
+        ].includes(inc.source)
+      ) {
+        throw new ApiError(400, `Invalid income source: ${inc.source}`);
+      }
+    });
+  }
+
   farm = await Farm.findByIdAndUpdate(farmId, updatedFields, {
     new: true,
     runValidators: true,
@@ -81,10 +99,63 @@ const updateFarm = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, farm, "Farm updated successfully"));
 });
 
+// Add income to a farm
+const addIncomeToFarm = asyncHandler(async (req, res) => {
+  const { farmId } = req.params;
+  const { income } = req.body;
+
+  if (!income || !Array.isArray(income) || income.length === 0) {
+    throw new ApiError(400, "Income must be provided as a non-empty array");
+  }
+
+  // Validate income source types
+  income.forEach((inc) => {
+    if (
+      ![
+        "Direct Crop Sale",
+        "Wholesale Sale",
+        "Export Income",
+        "Contract Farming",
+        "Seed Sale",
+        "other",
+      ].includes(inc.source)
+    ) {
+      throw new ApiError(400, `Invalid income source: ${inc.source}`);
+    }
+  });
+
+  // Find the farm by ID
+  const farm = await Farm.findById(farmId);
+
+  if (!farm) {
+    throw new ApiError(404, "Farm not found");
+  }
+
+  if (farm.owner.toString() !== req.user._id.toString()) {
+    throw new ApiError(
+      403,
+      "You are not authorized to add income to this farm"
+    );
+  }
+
+  // Add income to the farm
+  farm.income.push(...income);
+
+  // Save the farm with updated income
+  await farm.save();
+
+  res.status(200).json(new ApiResponse(200, farm, "Income added successfully"));
+});
+
+// Add process (irrigation, fertilizers, pesticides) to a farm
 const addProcessToFarm = asyncHandler(async (req, res) => {
   const { farmId } = req.params;
-  const { processName, date, description, duration, quantity, unit, method } =
-    req.body;
+  const { processName, date, description, quantity, unit } = req.body;
+
+  // Validate process type
+  if (!["Seeds", "Irrigation", "Fertilizers", "Pesticides"].includes(processName)) {
+    throw new ApiError(400, `Invalid process type: ${processName}`);
+  }
 
   let farm = await Farm.findById(farmId);
 
@@ -101,18 +172,17 @@ const addProcessToFarm = asyncHandler(async (req, res) => {
     processName,
     date,
     description,
-    duration,
     quantity,
-    unit,
-    method,
+    electricity,
+    rate
   };
 
   farm.processes.push(newProcess);
 
-  // Optionally, add the cost of the process to investments
-  if (quantity && unit) {
+  // Add the cost to investments only if the processName is "Irrigation"
+  if (processName === "Irrigation" && electricity) {
     const investmentDescription = `Process: ${processName}`;
-    const processCost = quantity * 10; // Example: You can calculate cost dynamically
+    const processCost = electricity * rate; // Example: Calculate cost dynamically
     farm.investments.push({
       category: processName,
       amount: processCost,
@@ -128,6 +198,7 @@ const addProcessToFarm = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, farm, "Process added to the farm successfully"));
 });
+
 
 // Delete a farm
 const deleteFarm = asyncHandler(async (req, res) => {
@@ -153,6 +224,7 @@ export {
   getFarmsByOwner,
   getFarmById,
   updateFarm,
+  addIncomeToFarm,
   addProcessToFarm,
   deleteFarm,
 };
