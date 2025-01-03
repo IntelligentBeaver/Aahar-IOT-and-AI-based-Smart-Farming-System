@@ -51,4 +51,3 @@ connectDb()
     console.log("Error connecting to the database:", error);
   });
 
-console.log("Hello World");

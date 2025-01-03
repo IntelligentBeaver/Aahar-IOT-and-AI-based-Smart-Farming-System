@@ -32,6 +32,5 @@ app.use('/iot', iotRoutes);
 
 // Error handler
 app.use(errorHandler);
-console.log("app.js is running");
 
 export default app;
