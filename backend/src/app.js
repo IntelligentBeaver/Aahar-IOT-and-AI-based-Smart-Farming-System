@@ -14,13 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors());
 
-// Define a route for the home page
-app.get("/", (req, res) => {
-  res.render("index");
-});
-
 //Routes
-
 app.get("/", (req, res) => {
   res.send("Welcome to the Smart Farm homepage");
 });
