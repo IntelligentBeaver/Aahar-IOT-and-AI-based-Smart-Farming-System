@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 
 export const verifyUser = async (req, _, next) => {
   try {
-    const token = req.header("Authorization").replace("Bearer ", "");
+    const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
       throw new ApiError(401, "Unauthorized request");
@@ -27,6 +27,8 @@ export const verifyUser = async (req, _, next) => {
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "Unauthorized request");
+    // throw new ApiError(401, error?.message || "Unauthorized request");
+    console.log("there is error in verify user", error);
+    next(error);
   }
 };

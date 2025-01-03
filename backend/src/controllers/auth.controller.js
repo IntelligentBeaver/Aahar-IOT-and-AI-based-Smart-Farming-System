@@ -32,6 +32,16 @@ const register = asyncHandler(async (req, res) => {
 
   res
     .status(201)
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
     .json(
       new ApiResponse(
         201,
@@ -85,6 +95,16 @@ const login = asyncHandler(async (req, res) => {
 
   res
     .status(200)
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
     .json(
       new ApiResponse(
         200,
