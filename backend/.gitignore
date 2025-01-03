@@ -1,0 +1,9 @@
+# Node.js
+node_modules/
+
+# Directory for environment files
+.env
+
+# VSCode settings
+.vscode/
+
