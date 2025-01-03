@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   fl_chart: ^0.70.0
   flutter_slidable: ^3.1.2
+  intl: ^0.19.0
   skeletonizer: ^1.4.2
   adaptive_theme: ^3.6.0
   google_nav_bar: ^5.0.7
@@ -27,6 +28,10 @@ dependencies:
   # flutter_local_notifications: ^18.0.1
   permission_handler: ^11.3.1
   cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.8.0
+  flutter_localization: ^0.3.0
+  liquid_progress_indicator_v2: ^0.5.0
+  animated_toggle_switch: ^0.8.4
 
 dev_dependencies:
   flutter_test:
@@ -38,20 +43,16 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/Aahar-white.png"
+  image_path: "assets/Logo-white.png"
   min_sdk_android: 21
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/Aahar-transparent-md.png"
+  adaptive_icon_foreground: "assets/Logo-black.png"
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
-    - assets/Aahar-black-md.png
-    - assets/Aahar-t-black-transparent.png
-    - assets/Aahar-black-transparent-md.png
-    - assets/Aahar-black.png
-    - assets/Aahar-t-transparent.png
-    - assets/Aahar-transparent-md.png
-    - assets/Aahar-transparent-sm.png
-    - assets/Aahar-transparent.png
-    - assets/Aahar-white.png
+    - assets/Logo-black.png
+    - assets/Logo-white.png
+    - assets/Logo-t-black.png
+    - assets/Logo-t-white.png
