@@ -1,4 +1,5 @@
 import { wss } from '../index.js'; 
+import Farm from "../models/farm.model.js";
 
 export const led = (req, res) => {
     const { action } = req.body; // Expecting action in the request body
@@ -84,10 +85,9 @@ export const led = (req, res) => {
 
 
 const power = 0.18; // The constant power usage (kWh or similar)
-const rate = 0.5; // Example rate per unit of electricity used (you can adjust this value)
 
-export const pump = async(req, res) => {
-  const { action, time } = req.body; // Expecting action and optional time in the request body
+export const pump = async (req, res) => {
+  const { action, time, farmId } = req.body; // Expecting action, optional time, and farmId in the request body
 
   // Validate the action
   if (!action || (action !== 'pump_turn_on' && action !== 'pump_turn_off')) {
@@ -97,6 +97,17 @@ export const pump = async(req, res) => {
   // Validate the time if provided
   if (time && (typeof time !== 'number' || time <= 0)) {
     return res.status(400).json({ message: 'Invalid time value. Time must be a positive number.' });
+  }
+
+  // Validate the farmId
+  if (!farmId) {
+    return res.status(400).json({ message: 'farmId is required to record processes and investments.' });
+  }
+
+  // Fetch the farm and validate ownership
+  const farm = await Farm.findById(farmId);
+  if (!farm) {
+    return res.status(404).json({ message: 'Farm not found.' });
   }
 
   // Send the action to the WebSocket clients
@@ -109,9 +120,9 @@ export const pump = async(req, res) => {
 
     // If the action is "pump_turn_on" and a time is provided, set a timer
     if (action === 'pump_turn_on' && time) {
-      pumpStartTime = Date.now(); // Store the timestamp when the pump is turned on
+      let pumpStartTime = Date.now(); // Store the timestamp when the pump is turned on
 
-      setTimeout(async() => {
+      setTimeout(async () => {
         wss.clients.forEach((client) => {
           if (client.readyState === 1) {
             client.send('pump_turn_off'); // Automatically turn off the pump after the specified time
@@ -119,76 +130,40 @@ export const pump = async(req, res) => {
         });
 
         const pumpOnDuration = (Date.now() - pumpStartTime) / 1000; // Calculate time in seconds
+        const electricity = pumpOnDuration * power; // Calculate electricity usage
 
-        // Calculate electricity usage in kWh or similar unit
-        const electricity = pumpOnDuration * power; // Using the formula: unit = time * power
-        console.log(`Pump automatically turned off after ${time} seconds. It was on for ${pumpOnDuration} seconds, using ${electricity} units of electricity.`);
-
-        // Example of adding the process to the farm's processes
         const newProcess = {
-          processName: 'Irrigation', // Example process name
+          processName: 'Irrigation',
           date: new Date(),
           description: 'Pump irrigation process.',
           quantity: pumpOnDuration,
           electricity: electricity,
         };
 
-        // Add the new process to the farm
-        addProcessToFarm(newProcess);
+        // console.log("farm", farm);
+        // Add the process and investment to the farm
+        addProcessAndInvestmentToFarm(farm, newProcess, electricity);
 
-        // Add investment cost after the process
-        const investmentDescription = `Process: ${newProcess.processName}`;
-        const processCost = electricity * rate; // Calculate cost dynamically based on electricity usage and rate
-
-        // Example of pushing the investment details into the farm's investments array
-        farm.investments.push({
-          category: newProcess.processName,
-          amount: processCost,
-          date: new Date(),
-          description: investmentDescription,
-        });
-
-        // Save the updated farm with the new process and investment
-        await farm.save();
-
-      }, time * 1000); // Convert time from seconds to milliseconds
+      }, time * 1000);
     }
 
     // If the action is "pump_turn_off", calculate how long the pump was on
     if (action === 'pump_turn_off' && pumpStartTime) {
       const pumpOnDuration = (Date.now() - pumpStartTime) / 1000; // Calculate time in seconds
-      pumpStartTime = null; // Reset the timestamp after turning off
+      pumpStartTime = null; // Reset the timestamp
 
-      // Calculate electricity usage in kWh or similar unit
-      const electricity = pumpOnDuration * power; // Using the formula: unit = time * power
-      console.log(`Pump turned off manually after being on for ${pumpOnDuration} seconds, using ${electricity} units of electricity.`);
+      const electricity = pumpOnDuration * power; // Calculate electricity usage
 
-      // Example of adding the process to the farm's processes
       const newProcess = {
-        processName: 'Irrigation', // Example process name
+        processName: 'Irrigation',
         date: new Date(),
         description: 'Pump irrigation process.',
         quantity: pumpOnDuration,
         electricity: electricity,
       };
 
-      // Add the new process to the farm
-      addProcessToFarm(newProcess);
-
-      // Add investment cost after the process
-      const investmentDescription = `Process: ${newProcess.processName}`;
-      const processCost = electricity * rate; // Calculate cost dynamically based on electricity usage and rate
-
-      // Example of pushing the investment details into the farm's investments array
-      farm.investments.push({
-        category: newProcess.processName,
-        amount: processCost,
-        date: new Date(),
-        description: investmentDescription,
-      });
-
-      // Save the updated farm with the new process and investment
-      await farm.save();
+      // Add the process and investment to the farm
+      addProcessAndInvestmentToFarm(farm, newProcess, electricity);
     }
 
     return res.status(200).json({
@@ -200,22 +175,22 @@ export const pump = async(req, res) => {
   }
 };
 
-// Function to add process to farm (as per the existing example)
-const addProcessToFarm = async (newProcess) => {
-  const { farmId, date, description, quantity, electricity } = newProcess;
+// Helper function to add a process and investment to the farm
+const addProcessAndInvestmentToFarm = async (farm, newProcess, electricity) => {
+  const rate = 0.5; // Example electricity rate per unit
+  const processCost = electricity * rate;
 
-  let farm = await Farm.findById(farmId);
-
-  if (!farm) {
-    throw new ApiError(404, "Farm not found");
-  }
-
-  if (farm.owner.toString() !== req.user._id.toString()) {
-    throw new ApiError(403, "You are not authorized to update this farm");
-  }
-
-  // Add the new process
+  // Add the new process to the farm
   farm.processes.push(newProcess);
+
+  // Add the investment cost
+  const investmentDescription = `Process: ${newProcess.processName}`;
+  farm.investments.push({
+    category: newProcess.processName,
+    amount: processCost,
+    date: new Date(),
+    description: investmentDescription,
+  });
 
   // Save the updated farm
   await farm.save();

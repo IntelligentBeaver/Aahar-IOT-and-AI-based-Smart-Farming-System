@@ -73,12 +73,15 @@ const getNationalNewsResult = async () => {
     PythonShell.run("national_news.py", options)
       .then((messages) => {
           // Parse the Python output to JSON
-          console.log(messages)
-        // console.log(messages[0]);
-        const rawResults = messages;
+          // console.log(messages)
+        // console.log("mmmm:", messages);
+        console.log("oooooo:", messages);
+        // const rawResults = JSON.parse(messages);
+        // const rawResults = messages[0];
+        // console.log("Raw Python Output:", rawResults);
         // console.log("Raw Python Output:", messages[0]);
-        // const formattedResults = JSON.parse(rawResults);
-        resolve(rawResults);
+        // const formattedResults = JSON.parse(messages[0].replace(/'/g, '"'));
+        resolve(messages);
       })
       .catch((error) => {
         console.error("Error in Python script:", error);
