@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'package:aahar_app/components/secrets.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterService {
-  final String _baseUrlRegister = "http://192.168.80.187:3000/auth/register";
+  final String _baseUrlRegister = baseUrlRegister;
   Future<Map<String, dynamic>> registerUser(
       String email, String password) async {
     try {
