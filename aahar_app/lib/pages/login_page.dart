@@ -1,3 +1,5 @@
+import 'package:aahar_app/common/custom_button.dart';
+import 'package:aahar_app/common/error_dialog.dart';
 import 'package:aahar_app/common/themed_image.dart';
 import 'package:aahar_app/components/auth/login_service.dart';
 import 'package:aahar_app/pages/dashboard_page.dart';
@@ -16,191 +18,148 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _showErrorDialog(BuildContext context, String data) async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog.adaptive(
-          title: Text(
-            "Login Failed",
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-          content: Text(data),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            )
-          ],
-        );
-      },
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Future<void> _showErrorDialog(String message) async {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog.adaptive(
+  //         title: const Text(
+  //           "Login Failed",
+  //           style: TextStyle(fontWeight: FontWeight.bold),
+  //         ),
+  //         content: Text(message),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: const Text('OK'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    required TextInputType keyboardType,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: 'Enter your $labelText',
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        border: Theme.of(context).inputDecorationTheme.border,
+        focusedBorder: Theme.of(context).inputDecorationTheme.focusedBorder,
+        enabledBorder: Theme.of(context).inputDecorationTheme.enabledBorder,
+        prefixIcon: Icon(prefixIcon),
+      ),
+      keyboardType: keyboardType,
+      style: const TextStyle(fontSize: 16),
+      cursorColor: Theme.of(context).primaryColor,
     );
   }
-  // Track loading state
 
-  void _submitform() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+  Future<void> _loginUser() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-    // ----------------------------------------------------------------
-    // SHOW LOADING ANIMATION
-    // ----------------------------------------------------------------
+    if (email.isEmpty || password.isEmpty) {
+      await showErrorDialog(context, 'Error', 'Please fill in both Fields.');
+      return;
+    }
+
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
 
-    // Instantiate the NetworkService
-    final networkService = LoginService();
+    final loginService = LoginService();
+    final result = await loginService.loginUser(email, password);
 
-    // Call the register function and get the result
-    final result = await networkService.loginUser(email, password);
-
-    // Handle the result (check if registration is successful)
-    if (result['success']) {
-      print("Login successful: ${result['message']}");
-      print('Access Token: ${result['data']['accessToken']}');
-
-      // Save login data to SharedPreferences
+    if (result['success'] == true) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('email', email);
       await prefs.setString('accessToken', result['data']['accessToken']);
       await prefs.setBool('isLoggedIn', true);
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-      // Navigate to the home screen or next page
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardPage()),
-        (route) => false,
-      ); // This ensures all previous routes are removed);
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          (route) => false,
+        );
+      }
     } else {
-      // Handle errors
-      _showErrorDialog(
-        context,
-        result['message'],
-      );
+      if (mounted) {
+        await showErrorDialog(context, 'Error', 'Invalid email or password');
+      }
+    }
+
+    if (mounted) {
       setState(() {
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Check the current theme brightness
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ThemedImage(
-                  darkImage: "assets/Logo-t-white.png",
-                  lightImage: "assets/Logo-t-black.png",
-                ),
-                // SizedBox(
-                //   height: 20,
-                // ),
-                // Text(
-                //   'Kukhuri Kaa',
-                //   style: TextStyle(
-                //     fontSize: 38,
-                //     fontWeight: FontWeight.w900,
-                //   ),
-                // ),
-                // Text(
-                //   'Smart Poultry Monitoring System',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.w300,
-                //   ),
-                // ),
-                // SizedBox(height: 40),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address',
-                    hintText: 'Enter your email',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    border: Theme.of(context).inputDecorationTheme.border,
-                    focusedBorder: Theme.of(context)
-                        .inputDecorationTheme
-                        .focusedBorder
-                        ?.copyWith(
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                    enabledBorder:
-                        Theme.of(context).inputDecorationTheme.enabledBorder,
-                    prefixIcon: Icon(Icons.mail),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(fontSize: 16),
-                  cursorColor: Theme.of(context).primaryColor,
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter your Password',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    border: Theme.of(context).inputDecorationTheme.border,
-                    focusedBorder: Theme.of(context)
-                        .inputDecorationTheme
-                        .focusedBorder
-                        ?.copyWith(
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                    enabledBorder:
-                        Theme.of(context).inputDecorationTheme.enabledBorder,
-                    prefixIcon: Icon(Icons.password),
-                  ),
-                  keyboardType: TextInputType.visiblePassword,
-                  style: TextStyle(fontSize: 16),
-                  cursorColor: Theme.of(context).primaryColor,
-                ),
-                SizedBox(height: 20),
-                _isLoading
-                    ? Center(
-                        child:
-                            CircularProgressIndicator()) // Show loader when logging in
-                    : ElevatedButton(
-                        onPressed: _submitform,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                          child: Text(
-                            'Login',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/signup');
-                  },
-                  child: Text(
-                    'Don\'t have an account? Sign Up',
-                    style: TextStyle(
-                      color: const Color.fromARGB(255, 31, 119, 190),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ThemedImage(
+                darkImage: "assets/Logo-t-white.png",
+                lightImage: "assets/Logo-t-black.png",
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _emailController,
+                labelText: 'Email Address',
+                prefixIcon: Icons.mail,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _passwordController,
+                labelText: 'Password',
+                prefixIcon: Icons.password,
+                keyboardType: TextInputType.visiblePassword,
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : CustomButton(label: "Login", onPressed: _loginUser),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/signup'),
+                child: const Text(
+                  "Don't have an account? Sign Up",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 31, 119, 190),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

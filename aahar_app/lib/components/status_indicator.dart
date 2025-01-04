@@ -11,7 +11,7 @@ class StatusIndicator extends StatelessWidget {
     required this.title,
     required this.isActive,
     this.activeColor = Colors.green,
-    this.inactiveColor = Colors.red,
+    this.inactiveColor = Colors.grey,
   });
 
   @override
@@ -22,9 +22,7 @@ class StatusIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive ? activeColor : inactiveColor,
         borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          width: 1.5,
-        ),
+        border: Border.all(),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -32,14 +30,13 @@ class StatusIndicator extends StatelessWidget {
           Icon(
             isActive ? Icons.check_circle : Icons.cancel,
             size: 28,
+            color: Colors.black,
           ),
           const SizedBox(width: 12),
           Text(
             title,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
           ),
         ],
       ),

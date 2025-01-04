@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:aahar_app/components/dashboard_content.dart';
+import 'package:aahar_app/components/response_page.dart';
+import 'package:aahar_app/components/secrets.dart';
 import 'package:aahar_app/pages/account.dart';
 import 'package:aahar_app/pages/control.dart';
 import 'package:aahar_app/pages/farm.dart';
@@ -8,7 +12,10 @@ import 'package:aahar_app/pages/news.dart';
 import 'package:aahar_app/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -22,6 +29,68 @@ class _DashboardPageState extends State<DashboardPage> {
   final ScrollController _scrollingController = ScrollController();
   int _selectedIndex = 2; // Set default index to 1 (second tab - Dashboard)
   String _appBarTitle = 'Dashboard'; // Default title for the SliverAppBar
+
+  // File? _image;
+  // final _picker = ImagePicker();
+
+  // pickImage() async {
+  //   final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+  //   if (pickedFile != null) {
+  //     _image = File(pickedFile.path);
+  //     setState(() {
+  //       uploadImage();
+  //     });
+  //   }
+  // }
+
+  // // Function to upload the image to the server
+  // Future<void> uploadImage() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final String accessToken = prefs.getString("accessToken") ?? '';
+  //   if (_image == null) {
+  //     print("No image selected");
+  //     return print("No Image Selected");
+  //   }
+  //   final _imageUrl = imageUrl;
+
+  //   // Navigate to ResponsePage with the responseFuture
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => ResponsePage(
+  //         responseFuture: _uploadImageToServer(_image!, _imageUrl, accessToken),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  // Future<String> _uploadImageToServer(
+  //     File image, String url, String accessToken) async {
+  //   try {
+  //     var request = http.MultipartRequest(
+  //       'POST',
+  //       Uri.parse(url),
+  //     );
+
+  //     request.files.add(await http.MultipartFile.fromPath(
+  //       'cropImage',
+  //       image.path,
+  //     ));
+  //     request.headers['Authorization'] = 'Bearer $accessToken';
+
+  //     var response = await request.send();
+
+  //     if (response.statusCode == 200) {
+  //       // Return the response body
+  //       return await response.stream.bytesToString();
+  //     } else {
+  //       // Handle error and return status code with message
+  //       return "Failed to upload image. Status Code: ${response.statusCode}";
+  //     }
+  //   } catch (e) {
+  //     return "Error uploading image: $e";
+  //   }
+  // }
 
   final List<Widget> _pages = [
     Farm(),
@@ -93,6 +162,18 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        // floatingActionButton: FloatingActionButton.extended(
+        //   label: Row(
+        //     children: [
+        //       Icon(Icons.camera_alt_rounded),
+        //       SizedBox(width: 8.0),
+        //       Text("Predict Disease"),
+        //     ],
+        //   ),
+        //   onPressed: () {
+        //     pickImage();
+        //   },
+        // ),
         body: CustomScrollView(
           physics: BouncingScrollPhysics(
               decelerationRate: ScrollDecelerationRate.fast),

@@ -18,6 +18,8 @@ class _LiquidProgressState extends State<LiquidProgress> {
   @override
   Widget build(BuildContext context) {
     double soilValue = 100 - ((widget.value / 4095) * 100);
+    // Round the value to 1 decimal place before using it
+    soilValue = double.parse(soilValue.toStringAsFixed(1));
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -25,11 +27,11 @@ class _LiquidProgressState extends State<LiquidProgress> {
           height: 100,
           width: double.infinity,
           child: LiquidLinearProgressIndicator(
-            value: 100 - ((widget.value / 4095) * 100),
+            value: 1 - (widget.value / 4095),
             valueColor: const AlwaysStoppedAnimation(Colors.green),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            borderColor: Theme.of(context).primaryColor,
-            borderWidth: 0.0,
+            borderColor: Theme.of(context).colorScheme.onSecondaryContainer,
+            borderWidth: 0,
             borderRadius: 12.0,
             direction: Axis.horizontal,
             center: Column(
