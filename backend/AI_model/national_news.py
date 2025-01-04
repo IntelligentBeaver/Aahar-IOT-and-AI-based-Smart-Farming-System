@@ -30,13 +30,17 @@ if response.status_code == 200:
         for h2_element in h2_elements
     ]
 
+    # Slice the list to discard the first 5 elements and keep the next 10
+    sliced_articles = articles_list[5:15]
+
     # Create the main variable with the parent key
     main_data = {
-        "national_articles": articles_list
+        "national_articles": sliced_articles
     }
 
     # Print the resulting JSON data
     print(json.dumps(main_data, ensure_ascii=False, indent=4))
+    
 
 else:
     print(f"Failed to retrieve the page. Status code: {response.status_code}")

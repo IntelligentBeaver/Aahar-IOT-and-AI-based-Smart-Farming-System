@@ -1,114 +1,54 @@
 import { wss } from '../index.js'; 
 import Farm from "../models/farm.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/apiError.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 export const led = (req, res) => {
-    const { action } = req.body; // Expecting action in the request body
-  
-    if (!action || (action !== 'led_turn_on' && action !== 'led_turn_off')) {
-      return res.status(400).json({ message: 'Invalid action' });
-    }
-  
-    // Send the command to WebSocket to control the ESP32 LED
-    if (wss.clients.size > 0) { // Ensure there is a WebSocket client connected
-      wss.clients.forEach(client => {
-        if (client.readyState === 1) {
-          client.send(action); // Send the action to the WebSocket client (ESP32)
-        }
-      });
-      return res.status(200).json({ message: `LED: ${action}` });
-    } else {
-      return res.status(500).json({ message: 'No WebSocket client connected' });
-    }
+  const { action } = req.body; // Expecting action in the request body
+
+  if (!action || (action !== 'led_turn_on' && action !== 'led_turn_off')) {
+    throw new ApiError(400, 'Invalid action');
+  }
+
+  // Send the command to WebSocket to control the ESP32 LED
+  if (wss.clients.size > 0) { // Ensure there is a WebSocket client connected
+    wss.clients.forEach(client => {
+      if (client.readyState === 1) {
+        client.send(action); // Send the action to the WebSocket client (ESP32)
+      }
+    });
+    return res.status(200).json(new ApiResponse(200, null, `LED: ${action}`));
+  } else {
+    return res.status(500).json(new ApiResponse(500, null, 'No WebSocket client connected'));
+  }
 };
-  
-// export const pump = (req, res) => {
-//     const { action } = req.body; // Expecting action in the request body
-  
-//     if (!action || (action !== 'pump_turn_on' && action !== 'pump_turn_off')) {
-//       return res.status(400).json({ message: 'Invalid action' });
-//     }
-  
-//     // Send the command to WebSocket to control the ESP32 pump
-//     if (wss.clients.size > 0) { // Ensure there is a WebSocket client connected
-//       wss.clients.forEach(client => {
-//         if (client.readyState === 1) {
-//           client.send(action); // Send the action to the WebSocket client (ESP32)
-//         }
-//       });
-//       return res.status(200).json({ message: `Pump: ${action}` });
-//     } else {
-//       return res.status(500).json({ message: 'No WebSocket client connected' });
-//     }
-// }
-  
-// export const pump = (req, res) => {
-//   const { action, time } = req.body; // Expecting action and optional time in the request body
 
-//   // Validate the action
-//   if (!action || (action !== 'pump_turn_on' && action !== 'pump_turn_off')) {
-//     return res.status(400).json({ message: 'Invalid action' });
-//   }
+// Power usage constant (kWh or similar)
+const power = 0.18; 
 
-//   // Validate the time if provided
-//   if (time && (typeof time !== 'number' || time <= 0)) {
-//     return res.status(400).json({ message: 'Invalid time value. Time must be a positive number.' });
-//   }
-
-//   // Send the action to the WebSocket clients
-//   if (wss.clients.size > 0) {
-//     wss.clients.forEach((client) => {
-//       if (client.readyState === 1) {
-//         client.send(action); // Send the action to the WebSocket client (ESP32)
-//       }
-//     });
-
-//     // If the action is "pump_turn_on" and a time is provided, set a timer
-//     if (action === 'pump_turn_on' && time) {
-//       setTimeout(() => {
-//         wss.clients.forEach((client) => {
-//           if (client.readyState === 1) {
-//             client.send('pump_turn_off'); // Automatically turn off the pump after the specified time
-//           }
-//         });
-//         console.log(`Pump automatically turned off after ${time} seconds.`);
-//       }, time * 1000); // Convert time from seconds to milliseconds
-//     }
-
-//     return res.status(200).json({
-//       message: `Pump: ${action}`,
-//       ...(time && action === 'pump_turn_on' && { autoTurnOff: `Pump will turn off automatically after ${time} seconds.` }),
-//     });
-//   } else {
-//     return res.status(500).json({ message: 'No WebSocket client connected.' });
-//   }
-// };
-
-
-const power = 0.18; // The constant power usage (kWh or similar)
-
-export const pump = async (req, res) => {
-  const { action, time, farmId } = req.body; // Expecting action, optional time, and farmId in the request body
+// Pump route handler
+export const pump = asyncHandler(async (req, res) => {
+  const { action, time } = req.body; // Expecting action, optional time, and farmId in the request body
+  const farmId = req.body.farmId || "677944cde77b1153946b4189"; // Default farmId or passed in request
 
   // Validate the action
   if (!action || (action !== 'pump_turn_on' && action !== 'pump_turn_off')) {
-    return res.status(400).json({ message: 'Invalid action' });
+    throw new ApiError(400, 'Invalid action');
   }
 
   // Validate the time if provided
   if (time && (typeof time !== 'number' || time <= 0)) {
-    return res.status(400).json({ message: 'Invalid time value. Time must be a positive number.' });
-  }
-
-  // Validate the farmId
-  if (!farmId) {
-    return res.status(400).json({ message: 'farmId is required to record processes and investments.' });
+    throw new ApiError(400, 'Invalid time value. Time must be a positive number.');
   }
 
   // Fetch the farm and validate ownership
   const farm = await Farm.findById(farmId);
   if (!farm) {
-    return res.status(404).json({ message: 'Farm not found.' });
+    throw new ApiError(404, 'Farm not found.');
   }
+
+  let pumpStartTime;
 
   // Send the action to the WebSocket clients
   if (wss.clients.size > 0) {
@@ -120,7 +60,7 @@ export const pump = async (req, res) => {
 
     // If the action is "pump_turn_on" and a time is provided, set a timer
     if (action === 'pump_turn_on' && time) {
-      let pumpStartTime = Date.now(); // Store the timestamp when the pump is turned on
+       pumpStartTime = Date.now(); // Store the timestamp when the pump is turned on
 
       setTimeout(async () => {
         wss.clients.forEach((client) => {
@@ -140,9 +80,8 @@ export const pump = async (req, res) => {
           electricity: electricity,
         };
 
-        // console.log("farm", farm);
         // Add the process and investment to the farm
-        addProcessAndInvestmentToFarm(farm, newProcess, electricity);
+        await addProcessAndInvestmentToFarm(farm, newProcess, electricity);
 
       }, time * 1000);
     }
@@ -163,7 +102,7 @@ export const pump = async (req, res) => {
       };
 
       // Add the process and investment to the farm
-      addProcessAndInvestmentToFarm(farm, newProcess, electricity);
+      await addProcessAndInvestmentToFarm(farm, newProcess, electricity);
     }
 
     return res.status(200).json({
@@ -171,9 +110,9 @@ export const pump = async (req, res) => {
       ...(time && action === 'pump_turn_on' && { autoTurnOff: `Pump will turn off automatically after ${time} seconds.` }),
     });
   } else {
-    return res.status(500).json({ message: 'No WebSocket client connected.' });
+    throw new ApiError(500, 'No WebSocket client connected.');
   }
-};
+});
 
 // Helper function to add a process and investment to the farm
 const addProcessAndInvestmentToFarm = async (farm, newProcess, electricity) => {
