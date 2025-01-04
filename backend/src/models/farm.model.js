@@ -9,7 +9,6 @@ const farmSchema = new mongoose.Schema(
     },
     farmingType: {
       type: String,
-      enum: ["Organic", "Conventional", "Hydroponic", "Mixed", "Other"],
     },
     crops: [
       {
