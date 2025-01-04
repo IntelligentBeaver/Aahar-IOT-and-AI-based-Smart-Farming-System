@@ -92,17 +92,52 @@ const getNationalNewsResult = async () => {
 
 //route fo disease Detection where image will be provided
 const predictDisease = asyncHandler(async (req, res) => {
+  
   try {
-    const diseaseData = await getDiseaseResult();
-    console.log("disease:", diseaseData);
+    const cropImage = req.file?.path;
+
+    if (!cropImage) {
+      throw new ApiError(400, "Image not provided");
+    }
+
+    const diseaseData = await getDiseasePredictionResult(cropImage);
+    console.log("Disease:", diseaseData);
     res
       .status(200)
-      .json(new ApiResponse(200, diseaseData, "Disease data fetched successfully"));
+      .json(
+        new ApiResponse(200, diseaseData, "Disease prediction data fetched successfully")
+    );
   } catch (error) {
-    console.error("Error in fetching disease data:", error);
-    throw new ApiError(500, "Failed to fetch disease data");
+    console.error("Error in fetching disease prediction data:", error);
+    throw new ApiError(500, "Failed to fetch disease prediction data");
   }
+    
 }
 );
+
+// Function to get disease prediction data from Python script
+const getDiseasePredictionResult = async (cropImage) => {
+  return new Promise((resolve, reject) => {
+    const options = {
+      mode: "text",
+      pythonOptions: ["-u"], // Unbuffered output from Python
+      scriptPath: "Image_model", // Path to your Python script
+      args: [cropImage], // Add arguments if needed
+    };
+
+    PythonShell.run("plant_detection.py", options)
+      .then((messages) => {
+        // Parse the Python output to JSON
+        console.log("mmmm:", messages);
+        const rawResults = JSON.parse(messages);
+        console.log("Raw Python Output:", rawResults);
+        resolve(rawResults);
+      })
+      .catch((error) => {
+        console.error("Error in Python script:", error);
+        reject("Failed to retrieve data from Python script");
+      });
+  });
+};
 
 export { internationalNews, nationalNews, predictDisease };
