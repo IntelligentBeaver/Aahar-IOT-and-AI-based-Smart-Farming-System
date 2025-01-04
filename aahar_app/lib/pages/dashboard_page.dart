@@ -1,5 +1,6 @@
-import 'package:aahar_app/components/auth/dashboard_content.dart';
+import 'package:aahar_app/components/dashboard_content.dart';
 import 'package:aahar_app/pages/account.dart';
+import 'package:aahar_app/pages/control.dart';
 import 'package:aahar_app/pages/farm.dart';
 import 'package:aahar_app/pages/forecasting.dart';
 import 'package:aahar_app/pages/login_page.dart';
@@ -8,6 +9,7 @@ import 'package:aahar_app/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -25,17 +27,22 @@ class _DashboardPageState extends State<DashboardPage> {
     Farm(),
     Forecasting(),
     DashboardContent(),
+    Control(),
     News(),
-    Account(),
   ];
 
   final List<String> _titles = [
     'Farm',
     'Forecasting',
     'Dashboard',
-    'News',
     'Control',
+    'News',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -70,11 +77,12 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   signOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all saved data
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-          builder: (context) => LoginPage()), // Navigate to the Login page
-      (route) => false, // Remove all routes from the stack
+      MaterialPageRoute(builder: (context) => LoginPage()),
+      (route) => false,
     );
   }
 

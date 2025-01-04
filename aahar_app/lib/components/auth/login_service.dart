@@ -1,8 +1,9 @@
+import 'package:aahar_app/components/secrets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginService {
-  final String _baseUrlLogin = "http://192.168.80.187:3000/auth/login";
+  final String _baseUrlLogin = baseUrlLogin;
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
