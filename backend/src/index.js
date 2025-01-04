@@ -12,6 +12,16 @@ const server = http.createServer(app);
 // Set up WebSocket server
 const wss = new WebSocketServer({ server });
 
+// Helper function to check if a message is valid JSON
+const isValidJSON = (message) => {
+  try {
+    JSON.parse(message);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 wss.on("connection", (ws) => {
   console.log("WebSocket client connected");
 

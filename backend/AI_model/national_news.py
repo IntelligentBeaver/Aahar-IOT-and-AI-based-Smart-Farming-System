@@ -21,20 +21,22 @@ if response.status_code == 200:
     # Find all h2 elements with class 'post-title'
     h2_elements = soup.find_all('h2', class_='post-title')
 
-    # List to store the extracted data
-    articles = []
+    # Extract data into a list of dictionaries
+    articles_list = [
+        {
+            "title": h2_element.get_text(strip=True),
+            "url": h2_element.find('a')['href']
+        }
+        for h2_element in h2_elements
+    ]
 
-    # Loop through all the h2 elements and extract the title and URL
-    for h2_element in h2_elements:
-        title = h2_element.get_text(strip=True)
-        href = h2_element.find('a')['href']
-        articles.append({"title": title, "url": href})
+    # Create the main variable with the parent key
+    main_data = {
+        "national_articles": articles_list
+    }
 
-    # Discard the top 3 entries by slicing the list
-    articles = articles[3:]
-
-    # Convert the list to JSON format and print
-    print(json.dumps(articles, ensure_ascii=False, indent=4))
+    # Print the resulting JSON data
+    print(json.dumps(main_data, ensure_ascii=False, indent=4))
 
 else:
     print(f"Failed to retrieve the page. Status code: {response.status_code}")
