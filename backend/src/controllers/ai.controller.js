@@ -90,4 +90,19 @@ const getNationalNewsResult = async () => {
   });
 };
 
-export { internationalNews, nationalNews };
+//route fo disease Detection where image will be provided
+const predictDisease = asyncHandler(async (req, res) => {
+  try {
+    const diseaseData = await getDiseaseResult();
+    console.log("disease:", diseaseData);
+    res
+      .status(200)
+      .json(new ApiResponse(200, diseaseData, "Disease data fetched successfully"));
+  } catch (error) {
+    console.error("Error in fetching disease data:", error);
+    throw new ApiError(500, "Failed to fetch disease data");
+  }
+}
+);
+
+export { internationalNews, nationalNews, predictDisease };
