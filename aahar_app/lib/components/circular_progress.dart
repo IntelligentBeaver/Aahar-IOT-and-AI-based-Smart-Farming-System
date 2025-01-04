@@ -45,6 +45,7 @@ class CircularProgressWidget extends StatelessWidget {
       progress: progress,
       startAngle: 225,
       sweepAngle: 270,
+      corners: StrokeCap.round,
       foregroundColor: foregroundColor,
       backgroundColor: userBackground
           ? backgroundColor

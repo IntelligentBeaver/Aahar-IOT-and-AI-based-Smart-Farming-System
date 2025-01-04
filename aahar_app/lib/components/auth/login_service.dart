@@ -12,7 +12,6 @@ class LoginService {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
-
       if (response.statusCode == 200) {
         // Successful login
         return _parseResponse(response.body); // Return parsed response as a map

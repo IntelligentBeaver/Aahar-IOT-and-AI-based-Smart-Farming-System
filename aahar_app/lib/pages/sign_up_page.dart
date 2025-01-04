@@ -1,4 +1,5 @@
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:aahar_app/common/custom_button.dart';
+import 'package:aahar_app/common/error_dialog.dart';
 import 'package:aahar_app/common/themed_image.dart';
 import 'package:aahar_app/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
@@ -12,54 +13,51 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  // final _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   bool _isLoading = false;
 
-  void _submitForm() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
-    final confirmPassword = _confirmPasswordController.text;
+  void _registerUser() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-    // ----------------------------------------------------------------
-    // SHOW LOADING ANIMATION
-    // ----------------------------------------------------------------
+    // Input validation
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      await showErrorDialog(context, 'Error', 'IAll fields are required');
+      return;
+    }
+    if (password != confirmPassword) {
+      await showErrorDialog(context, 'Error', 'Passwords do not match.');
+      return;
+    }
+
+    // Show loading spinner
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
 
-    // Instantiate the NetworkService
+    // Call register service
     final networkService = RegisterService();
-
-    // Call the register function and get the result
     final result = await networkService.registerUser(email, password);
 
-    print(result);
-    // Handle the result (check if registration is successful)
     if (result['success']) {
       print("Registration successful: ${result['message']}");
-      print('Access Token: ${result['data']['accessToken']}');
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-      // Navigate to the home screen or next page
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => DashboardPage()),
         (route) => false,
-      ); // This ensures all previous routes are removed);
+      );
     } else {
-      // Handle errors
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Registration failed: ${result['message']}"),
-      ));
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
+      await showErrorDialog(context, 'Error', result['message']);
     }
+
+    // Stop loading spinner
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -67,149 +65,105 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ThemedImage(
-                  darkImage: "assets/Logo-t-white.png",
-                  lightImage: "assets/Logo-t-black.png",
-                ),
-                // SizedBox(
-                //   height: 20,
-                // ),
-                // Text(
-                //   'Kukhuri Kaa',
-                //   style: TextStyle(
-                //     fontSize: 38,
-                //     fontWeight: FontWeight.w900,
-                //   ),
-                // ),
-                // Text(
-                //   'Smart Poultry Monitoring System',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.w300,
-                //   ),
-                // ),
-                // SizedBox(height: 40),
-                // TextField(
-                //   // controller: _fullNameController,
-                //   decoration: InputDecoration(
-                //     labelText: 'Full Name',
-                //     prefixIcon: Icon(Icons.person),
-                //     border: OutlineInputBorder(),
-                //   ),
-                // ),
-                // SizedBox(height: 20),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address',
-                    hintText: 'Enter your email',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    border: Theme.of(context).inputDecorationTheme.border,
-                    focusedBorder: Theme.of(context)
-                        .inputDecorationTheme
-                        .focusedBorder
-                        ?.copyWith(
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                    enabledBorder:
-                        Theme.of(context).inputDecorationTheme.enabledBorder,
-                    prefixIcon: Icon(Icons.mail),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(fontSize: 16),
-                  cursorColor: Theme.of(context).primaryColor,
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter your Password',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    border: Theme.of(context).inputDecorationTheme.border,
-                    focusedBorder: Theme.of(context)
-                        .inputDecorationTheme
-                        .focusedBorder
-                        ?.copyWith(
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                    enabledBorder:
-                        Theme.of(context).inputDecorationTheme.enabledBorder,
-                    prefixIcon: Icon(Icons.password),
-                  ),
-                  keyboardType: TextInputType.visiblePassword,
-                  style: TextStyle(fontSize: 16),
-                  cursorColor: Theme.of(context).primaryColor,
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    hintText: 'Re-enter your Password',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    border: Theme.of(context).inputDecorationTheme.border,
-                    focusedBorder: Theme.of(context)
-                        .inputDecorationTheme
-                        .focusedBorder
-                        ?.copyWith(
-                          borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                    enabledBorder:
-                        Theme.of(context).inputDecorationTheme.enabledBorder,
-                    prefixIcon: Icon(Icons.password),
-                  ),
-                  keyboardType: TextInputType.visiblePassword,
-                  style: TextStyle(fontSize: 16),
-                  cursorColor: Theme.of(context).primaryColor,
-                ),
-                SizedBox(height: 40),
-                _isLoading
-                    ? Center(
-                        child:
-                            CircularProgressIndicator()) // Show loader when logging in
-                    : ElevatedButton(
-                        onPressed: _submitForm,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                          child: Text(
-                            'Sign Up',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Already have an account? Login',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const ThemedImage(
+                darkImage: "assets/Logo-t-white.png",
+                lightImage: "assets/Logo-t-black.png",
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                controller: _emailController,
+                labelText: 'Email Address',
+                hintText: 'Enter your email',
+                icon: Icons.mail,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                controller: _passwordController,
+                labelText: 'Password',
+                hintText: 'Enter your password',
+                icon: Icons.lock,
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                controller: _confirmPasswordController,
+                labelText: 'Confirm Password',
+                hintText: 'Re-enter your password',
+                icon: Icons.lock_outline,
+                obscureText: true,
+              ),
+              const SizedBox(height: 30),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : CustomButton(label: "Register", onPressed: _registerUser),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Already have an account? Login',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Reusable CustomTextField widget
+class CustomTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String labelText;
+  final String hintText;
+  final IconData icon;
+  final bool obscureText;
+  final TextInputType keyboardType;
+
+  const CustomTextField({
+    super.key,
+    required this.controller,
+    required this.labelText,
+    required this.hintText,
+    required this.icon,
+    this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(fontSize: 16),
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        border: Theme.of(context).inputDecorationTheme.border,
+        focusedBorder:
+            Theme.of(context).inputDecorationTheme.focusedBorder?.copyWith(
+                  borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+        enabledBorder: Theme.of(context).inputDecorationTheme.enabledBorder,
+        prefixIcon: Icon(icon),
       ),
     );
   }

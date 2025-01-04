@@ -1,3 +1,5 @@
+import 'package:aahar_app/components/get_crop_tab.dart';
+import 'package:aahar_app/components/set_cropt_tab.dart';
 import 'package:flutter/material.dart';
 
 class Farm extends StatefulWidget {
@@ -49,28 +51,35 @@ class _FarmState extends State<Farm> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          TabBar(
-            dividerHeight: 0.2,
-            indicatorSize: TabBarIndicatorSize.label,
-            enableFeedback: true,
-            indicatorWeight: 4,
-            controller: _tabBarController,
-            tabs: myTabs,
-          ),
-          SizedBox(
-            height: 150,
-            child: TabBarView(controller: _tabBarController, children: [
-              Center(
-                child: Text("1"),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // TabBar at the top
+            TabBar(
+              controller: _tabBarController,
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorWeight: 4,
+              tabs: myTabs,
+            ),
+
+            // TabBarView dynamically taking up remaining space
+            Expanded(
+              child: TabBarView(
+                controller: _tabBarController,
+                children: [
+                  SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SetCropTab(),
+                    ),
+                  ),
+                  Center(child: FetchFarmData()),
+                ],
               ),
-              Center(
-                child: Text("2"),
-              ),
-            ]),
-          )
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
