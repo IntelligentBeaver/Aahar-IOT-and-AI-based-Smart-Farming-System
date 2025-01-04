@@ -170,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 16),
                   cursorColor: Theme.of(context).primaryColor,
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 20),
                 _isLoading
                     ? Center(
                         child:
@@ -193,7 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text(
                     'Don\'t have an account? Sign Up',
                     style: TextStyle(
-                      color: Colors.blue,
+                      color: const Color.fromARGB(255, 31, 119, 190),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),

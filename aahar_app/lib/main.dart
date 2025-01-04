@@ -1,3 +1,4 @@
+import 'package:aahar_app/pages/login_page.dart';
 import 'package:aahar_app/providers/theme_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:aahar_app/pages/dashboard_page.dart';
@@ -45,7 +46,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Aahar App',
       themeMode: ThemeMode.dark,
       theme: Provider.of<ThemeProvider>(context).currentTheme,
-      home: widget.isLoggedIn ? const DashboardPage() : const DashboardPage(),
+      home: widget.isLoggedIn ? const DashboardPage() : const LoginPage(),
       routes: {
         '/dashboard_page': (context) => const DashboardPage(),
         '/signup': (context) => const SignUpPage(),

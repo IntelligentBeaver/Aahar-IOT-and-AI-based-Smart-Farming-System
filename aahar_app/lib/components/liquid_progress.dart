@@ -17,34 +17,36 @@ class LiquidProgress extends StatefulWidget {
 class _LiquidProgressState extends State<LiquidProgress> {
   @override
   Widget build(BuildContext context) {
+    double soilValue = 100 - ((widget.value / 4095) * 100);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 150,
+          height: 100,
           width: double.infinity,
           child: LiquidLinearProgressIndicator(
             value: 100 - ((widget.value / 4095) * 100),
             valueColor: const AlwaysStoppedAnimation(Colors.green),
-            backgroundColor: Colors.grey.shade200,
-            borderColor: Colors.green.shade900,
-            borderWidth: 2.0,
-            borderRadius: 8.0,
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            borderColor: Theme.of(context).primaryColor,
+            borderWidth: 0.0,
+            borderRadius: 12.0,
             direction: Axis.horizontal,
             center: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "${widget.value.toStringAsFixed(0)}%",
+                  "$soilValue%",
                   style: const TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   widget.label,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w300),
                 ),
               ],
             ),

@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:aahar_app/components/circular_progress.dart';
-import 'package:aahar_app/components/auth/sensor_data_screen.dart';
 import 'package:aahar_app/components/liquid_progress.dart';
 import 'package:aahar_app/components/secrets.dart';
-import 'package:aahar_app/providers/control_provider.dart';
+import 'package:aahar_app/components/status_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
@@ -21,15 +19,13 @@ class _DashboardContentState extends State<DashboardContent> {
   final String _webSocketUrl =
       webSocketUrl; // WebSocket server URL (Ensure it's secure, 'wss://')
   late WebSocketChannel _channel;
-
-  StreamSubscription? _streamSubscription; // To manage WebSocket stream
-
+  StreamSubscription? _streamSubscription;
   Map<String, dynamic> _sensorData = {};
-
-  bool _connectionFailed = false; // To track connection failure
-  bool _isConnecting = true; // Track connection status
-  Timer? _timeoutTimer; // Timer for connection timeout
-  bool _isDisposed = false; // To check if the widget is disposed
+  bool _connectionFailed = false;
+  Timer? _timeoutTimer;
+  bool _isDisposed = false;
+  bool _isLoading = false;
+  String? _errorMessage; // Store error message
 
   double temperature = 0.0;
   double humidity = 0.0;
@@ -50,53 +46,52 @@ class _DashboardContentState extends State<DashboardContent> {
 
   Future<void> _connectWebSocket() async {
     try {
+      setStateIfMounted(() {
+        _isLoading = true;
+        _errorMessage = null; // Clear previous errors
+      });
+
       // Initialize WebSocket connection
       _channel = WebSocketChannel.connect(Uri.parse(_webSocketUrl));
 
       // Start the timeout timer
-      _timeoutTimer = Timer(Duration(seconds: 5), () {
+      _timeoutTimer = Timer(const Duration(seconds: 5), () {
         if (_sensorData.isEmpty) {
           setStateIfMounted(() {
             _connectionFailed = true;
-            _isConnecting = false;
+            _isLoading = false;
           });
-          _channel.sink.close(status.normalClosure); // Close WebSocket
+          _channel.sink.close(status.normalClosure);
         }
       });
 
       // Listen for incoming data
       _streamSubscription = _channel.stream.listen(
         (message) {
-          _timeoutTimer?.cancel(); // Cancel the timeout if data is received
+          _timeoutTimer?.cancel();
           setStateIfMounted(() {
             _sensorData = Map<String, dynamic>.from(jsonDecode(message));
-            temperature = (_sensorData['temperature'] is int
-                    ? (_sensorData['temperature'] as int).toDouble()
-                    : _sensorData['temperature']) ??
-                0.0;
-            humidity = (_sensorData['humidity'] is int
-                    ? (_sensorData['humidity'] as int).toDouble()
-                    : _sensorData['humidity']) ??
-                0.0;
-            soil_moisture = (_sensorData['soil_moisture'] is int
-                    ? (_sensorData['soil_moisture'] as int).toDouble()
-                    : _sensorData['soil_moisture']) ??
-                4095.0;
-            print(soil_moisture);
-            _isConnecting = false; // Data received, stop loading
+            print(_sensorData);
+            temperature = (_sensorData['temperature']?.toDouble() ?? 0.0);
+            humidity = (_sensorData['humidity']?.toDouble() ?? 0.0);
+            soil_moisture =
+                (_sensorData['soil_moisture']?.toDouble() ?? 4095.0);
+            _isLoading = false;
           });
         },
         onError: (error) {
           setStateIfMounted(() {
             _connectionFailed = true;
-            _isConnecting = false;
+            _isLoading = false;
+            _errorMessage = error.toString(); // Capture error message
           });
         },
         onDone: () {
           if (_sensorData.isEmpty) {
             setStateIfMounted(() {
               _connectionFailed = true;
-              _isConnecting = false;
+              _isLoading = false;
+              _errorMessage = "Connection closed by server.";
             });
           }
         },
@@ -104,27 +99,28 @@ class _DashboardContentState extends State<DashboardContent> {
     } catch (e) {
       setStateIfMounted(() {
         _connectionFailed = true;
-        _isConnecting = false;
+        _isLoading = false;
+        _errorMessage = e.toString(); // Capture error message
       });
     }
   }
 
   @override
   void dispose() {
-    _isDisposed = true; // Mark the widget as disposed
-    _timeoutTimer?.cancel(); // Cancel the timeout timer
-    _streamSubscription?.cancel(); // Cancel the WebSocket stream
-    _channel.sink.close(status.normalClosure); // Close WebSocket connection
+    _isDisposed = true;
+    _timeoutTimer?.cancel();
+    _streamSubscription?.cancel();
+    _channel.sink.close(status.normalClosure);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _isConnecting
+        child: _isLoading
             ? Center(
                 child: CircularProgressIndicator.adaptive(
                   strokeWidth: 6,
@@ -132,16 +128,44 @@ class _DashboardContentState extends State<DashboardContent> {
                 ),
               )
             : _connectionFailed
-                ? Text(
-                    "Connection failed. Please check your network or server.",
-                    style: TextStyle(color: Colors.red, fontSize: 16),
-                    semanticsLabel: "Connection failed message",
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_errorMessage != null)
+                          Text(
+                            _errorMessage!,
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _connectWebSocket,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text("Retry"),
+                        ),
+                      ],
+                    ),
                   )
                 : _sensorData.isNotEmpty
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Temp and Humidity",
                             style: TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.w800),
@@ -152,11 +176,11 @@ class _DashboardContentState extends State<DashboardContent> {
                                 child: CircularProgressWidget(
                                   title: "Temperature",
                                   unit: "°C",
-                                  foregroundColor: Colors.blue,
+                                  foregroundColor: Colors.red,
                                   progress: temperature,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              const SizedBox(width: 20),
                               Expanded(
                                 child: CircularProgressWidget(
                                   title: "Humidity",
@@ -167,17 +191,52 @@ class _DashboardContentState extends State<DashboardContent> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 20),
-                          Text(
+                          const SizedBox(height: 20),
+                          const Text(
                             "Soil Health",
                             style: TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.w800),
                           ),
+                          const SizedBox(height: 10),
                           LiquidProgress(
-                              label: "Soil Moisture", value: soil_moisture)
+                            label: "Soil Moisture",
+                            value: soil_moisture,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "Indicators",
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 10),
+                          Center(
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 20,
+                              children: [
+                                StatusIndicator(
+                                  title: "Fire Sensor",
+                                  isActive:
+                                      (_sensorData['fire_sensor'] ?? 0.0) > 403,
+                                ),
+                                StatusIndicator(
+                                  title: "Irrigation",
+                                  isActive:
+                                      (_sensorData['irrigation'] ?? 0.0) > 2000,
+                                ),
+                                StatusIndicator(
+                                  title: "Cattle Sensor",
+                                  isActive:
+                                      (_sensorData['cattle_sensor'] ?? 0.0) >
+                                          200,
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       )
-                    : Center(
+                    : const Center(
                         child: CircularProgressIndicator.adaptive(
                           strokeWidth: 6,
                           semanticsLabel: "Loading sensor data...",

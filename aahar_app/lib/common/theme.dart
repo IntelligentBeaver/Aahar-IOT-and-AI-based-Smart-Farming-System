@@ -32,7 +32,9 @@ final ThemeData lightTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade400),
+      borderSide: BorderSide(
+        color: Colors.grey.shade400,
+      ),
     ),
     contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
     enabledBorder: OutlineInputBorder(
