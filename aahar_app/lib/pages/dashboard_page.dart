@@ -1,4 +1,4 @@
-import 'package:aahar_app/components/auth/dashboard_content.dart';
+import 'package:aahar_app/components/dashboard_content.dart';
 import 'package:aahar_app/pages/account.dart';
 import 'package:aahar_app/pages/control.dart';
 import 'package:aahar_app/pages/farm.dart';

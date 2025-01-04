@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:aahar_app/components/daily_forecasts.dart';
 import 'package:aahar_app/components/hourly_forecasts.dart';
+import 'package:aahar_app/components/secrets.dart';
 import '../components/additional_information.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -18,8 +19,6 @@ class Forecasting extends StatefulWidget {
 class _ForecastingState extends State<Forecasting> {
   late Future<Map<String, dynamic>> weather;
   String locationName = "Your Location";
-  String _apiKey =
-      "5c6131e0bd0b648dda6d504f83c1dc6f"; // Store the key securely (environment variables, etc.)
 
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
@@ -28,6 +27,8 @@ class _ForecastingState extends State<Forecasting> {
 
       final double latitude = position.latitude;
       final double longitude = position.longitude;
+
+      final String _apiKey = apiKey;
 
       // Call OpenWeatherMap API with latitude and longitude
       final res = await http.get(

@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Aahar App',
       themeMode: ThemeMode.dark,
       theme: Provider.of<ThemeProvider>(context).currentTheme,
-      home: widget.isLoggedIn ? const DashboardPage() : const Wrapper(),
+      home: widget.isLoggedIn ? const DashboardPage() : const DashboardPage(),
       routes: {
         '/dashboard_page': (context) => const DashboardPage(),
         '/signup': (context) => const SignUpPage(),
