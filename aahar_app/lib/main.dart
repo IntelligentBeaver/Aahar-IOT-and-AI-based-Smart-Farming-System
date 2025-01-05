@@ -29,7 +29,7 @@ Future<void> main() async {
 class MyApp extends StatefulWidget {
   final bool isLoggedIn;
 
-  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   State<MyApp> createState() => _MyAppState();

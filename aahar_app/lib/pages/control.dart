@@ -1,10 +1,7 @@
 import 'package:aahar_app/components/auth/led_service.dart';
 import 'package:aahar_app/components/auth/pump_service.dart';
-import 'package:aahar_app/components/secrets.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class Control extends StatefulWidget {
   const Control({super.key});
@@ -85,8 +82,8 @@ class _ControlState extends State<Control> {
       });
 
       // Inform backend that the pump is turned off
-      final pumpService = PumpService();
-      final response = pumpService.sendPumpStateToBackend(controls[1]['state']);
+      // final pumpService = PumpService();
+      // final response = pumpService.sendPumpStateToBackend(controls[1]['state']);
     }
   }
 

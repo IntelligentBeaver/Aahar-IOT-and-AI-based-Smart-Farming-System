@@ -62,7 +62,6 @@ class _NewsState extends State<News> {
         });
       }
     } catch (e) {
-      print('Error getting national news: $e');
       setState(() {
         _isLoading = false;
         _hasError = true; // Set error state on exception
@@ -108,7 +107,6 @@ class _NewsState extends State<News> {
         });
       }
     } catch (e) {
-      print('Error getting international news: $e');
       setState(() {
         _isLoading = false;
         _hasError = true; // Set error state on exception

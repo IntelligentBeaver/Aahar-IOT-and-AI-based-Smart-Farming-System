@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:aahar_app/components/secrets.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class GetFarmDataService {
@@ -20,10 +19,8 @@ class GetFarmDataService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Data successfully posted: ${response.body}");
         return json.decode(response.body);
       } else {
-        print("Error: ${response.body}");
         return json.decode(response.body);
       }
     } catch (e) {

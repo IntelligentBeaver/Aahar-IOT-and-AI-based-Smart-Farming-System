@@ -1,9 +1,7 @@
 import 'dart:io';
-
 import 'package:aahar_app/components/dashboard_content.dart';
 import 'package:aahar_app/components/response_page.dart';
 import 'package:aahar_app/components/secrets.dart';
-import 'package:aahar_app/pages/account.dart';
 import 'package:aahar_app/pages/control.dart';
 import 'package:aahar_app/pages/farm.dart';
 import 'package:aahar_app/pages/forecasting.dart';
