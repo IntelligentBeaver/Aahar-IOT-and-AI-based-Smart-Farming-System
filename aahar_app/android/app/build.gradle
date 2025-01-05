@@ -6,6 +6,12 @@ plugins {
 }
 
 android {
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def newApkName = "Aahar-${variant.name}.apk"
+            output.outputFileName = newApkName
+        }
+    }
     namespace = "com.example.aahar_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"

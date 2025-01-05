@@ -62,7 +62,13 @@ class _LoginPageState extends State<LoginPage> {
         contentPadding:
             const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         border: Theme.of(context).inputDecorationTheme.border,
-        focusedBorder: Theme.of(context).inputDecorationTheme.focusedBorder,
+        focusedBorder: Theme.of(context)
+            .inputDecorationTheme
+            .focusedBorder
+            ?.copyWith(
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.secondary),
+            ),
         enabledBorder: Theme.of(context).inputDecorationTheme.enabledBorder,
         prefixIcon: Icon(prefixIcon),
       ),
