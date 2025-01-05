@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 
 class Control extends StatefulWidget {
   const Control({super.key});
-
   @override
   State<Control> createState() => _ControlState();
 }

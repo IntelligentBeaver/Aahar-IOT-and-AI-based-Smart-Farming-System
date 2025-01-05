@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 class ResponsePage extends StatelessWidget {
@@ -18,82 +17,123 @@ class ResponsePage extends StatelessWidget {
           future: responseFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 20),
-                  Text(
-                    "Processing...",
-                    style: TextStyle(fontSize: 24),
-                  ),
-                ],
-              );
+              return _buildLoading();
             } else if (snapshot.hasError) {
-              return Text(
-                "Error: ${snapshot.error}",
-                style: TextStyle(color: Colors.red),
-              );
+              return _buildError(snapshot.error, context);
             } else if (snapshot.hasData) {
-              print(snapshot.data);
-              try {
-                final Map<String, dynamic> responseData =
-                    jsonDecode(snapshot.data!);
-                final List<dynamic> data = responseData["data"] ?? [];
-
-                final String predictedClass = data
-                    .firstWhere((item) => item.startsWith("Predicted Class: "))
-                    .replaceFirst("Predicted Class: ", "");
-                final String confidenceScore = data
-                    .firstWhere((item) => item.startsWith("Confidence Score: "))
-                    .replaceFirst("Confidence Score: ", "");
-
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(10.0, 80, 10, 80),
-                  child: Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      width: double.infinity,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Prediction Result:",
-                            style: TextStyle(
-                                fontSize: 52, fontWeight: FontWeight.w800),
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            "Class: $predictedClass",
-                            style: TextStyle(
-                                fontSize: 34, fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            "Confidence: $confidenceScore",
-                            style: TextStyle(
-                                fontSize: 34, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              } catch (e) {
-                return Text(
-                  "Error parsing response: $e",
-                  style: TextStyle(color: Colors.red),
-                );
-              }
+              return _buildPredictionResult(snapshot.data!, context);
             } else {
-              return Text("Something went wrong.");
+              return _buildError("Unexpected error occurred.", context);
             }
           },
         ),
       ),
     );
+  }
+
+  // Loading state UI
+  Widget _buildLoading() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircularProgressIndicator(),
+        SizedBox(height: 20),
+        Text(
+          "Processing...",
+          style: TextStyle(fontSize: 24),
+        ),
+      ],
+    );
+  }
+
+  // Error state UI
+  Widget _buildError(Object? error, BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.error,
+          color: Colors.red,
+          size: 50,
+        ),
+        SizedBox(height: 20),
+        Text(
+          "Error: $error",
+          style: TextStyle(color: Colors.red, fontSize: 18),
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            // Retry fetching data
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      ResponsePage(responseFuture: responseFuture)),
+            );
+          },
+          child: Text("Retry"),
+        ),
+      ],
+    );
+  }
+
+  // Prediction result UI
+  Widget _buildPredictionResult(String response, BuildContext context) {
+    try {
+      final Map<String, dynamic> responseData = jsonDecode(response);
+      final List<dynamic> data = responseData["data"] ?? [];
+
+      final String predictedClass = _extractInfo(data, "Predicted Class");
+      final String confidenceScoreValue =
+          _extractInfo(data, "Confidence Score");
+      final String confidenceScore =
+          (double.parse(confidenceScoreValue) * 100).toStringAsFixed(1);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 80),
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            width: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Prediction Result:",
+                  style: TextStyle(fontSize: 52, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Class: $predictedClass",
+                  style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  "Confidence: $confidenceScore%",
+                  style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      return _buildError("Error parsing response: $e", context);
+    }
+  }
+
+  // Helper method to extract relevant information from the response data
+  String _extractInfo(List<dynamic> data, String key) {
+    try {
+      return data
+          .firstWhere((item) => item.startsWith("$key: "))
+          .replaceFirst("$key: ", "");
+    } catch (e) {
+      return "N/A"; // In case the key is not found
+    }
   }
 }

@@ -1,9 +1,7 @@
 import 'package:aahar_app/pages/login_page.dart';
 import 'package:aahar_app/providers/theme_provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:aahar_app/pages/dashboard_page.dart';
 import 'package:aahar_app/pages/sign_up_page.dart';
-import 'package:aahar_app/pages/wrapper.dart';
 import 'package:aahar_app/providers/control_provider.dart';
 import 'package:aahar_app/providers/control_state.dart';
 import 'package:aahar_app/providers/sensor_data_provider.dart';
@@ -11,8 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
-  // Make sure widgets are initialized before running the app
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();

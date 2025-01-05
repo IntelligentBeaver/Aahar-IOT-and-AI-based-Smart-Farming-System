@@ -8,3 +8,6 @@ final String pumpStateUrl = "http://192.168.196.187:3000/iot/control-pump";
 final String ledStateUrl = "http://192.168.196.187:3000/iot/control-led";
 final String getFarmUrl = "http://192.168.196.187:3000/farm/";
 final String imageUrl = "http://192.168.196.187:3000/ai/predict-disease";
+final String nationalNewsUrl = "http://192.168.196.187:3000/ai/national-news";
+final String internationalNewsUrl =
+    "http://192.168.196.187:3000/ai/international-news";

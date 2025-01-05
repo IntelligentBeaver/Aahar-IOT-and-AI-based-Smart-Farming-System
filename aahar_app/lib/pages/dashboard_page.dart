@@ -30,67 +30,67 @@ class _DashboardPageState extends State<DashboardPage> {
   int _selectedIndex = 2; // Set default index to 1 (second tab - Dashboard)
   String _appBarTitle = 'Dashboard'; // Default title for the SliverAppBar
 
-  // File? _image;
-  // final _picker = ImagePicker();
+  File? _image;
+  final _picker = ImagePicker();
 
-  // pickImage() async {
-  //   final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-  //   if (pickedFile != null) {
-  //     _image = File(pickedFile.path);
-  //     setState(() {
-  //       uploadImage();
-  //     });
-  //   }
-  // }
+  pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      _image = File(pickedFile.path);
+      setState(() {
+        uploadImage();
+      });
+    }
+  }
 
-  // // Function to upload the image to the server
-  // Future<void> uploadImage() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final String accessToken = prefs.getString("accessToken") ?? '';
-  //   if (_image == null) {
-  //     print("No image selected");
-  //     return print("No Image Selected");
-  //   }
-  //   final _imageUrl = imageUrl;
+  // Function to upload the image to the server
+  Future<void> uploadImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String accessToken = prefs.getString("accessToken") ?? '';
+    if (_image == null) {
+      print("No image selected");
+      return print("No Image Selected");
+    }
+    final _imageUrl = imageUrl;
 
-  //   // Navigate to ResponsePage with the responseFuture
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => ResponsePage(
-  //         responseFuture: _uploadImageToServer(_image!, _imageUrl, accessToken),
-  //       ),
-  //     ),
-  //   );
-  // }
+    // Navigate to ResponsePage with the responseFuture
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResponsePage(
+          responseFuture: _uploadImageToServer(_image!, _imageUrl, accessToken),
+        ),
+      ),
+    );
+  }
 
-  // Future<String> _uploadImageToServer(
-  //     File image, String url, String accessToken) async {
-  //   try {
-  //     var request = http.MultipartRequest(
-  //       'POST',
-  //       Uri.parse(url),
-  //     );
+  Future<String> _uploadImageToServer(
+      File image, String url, String accessToken) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(url),
+      );
 
-  //     request.files.add(await http.MultipartFile.fromPath(
-  //       'cropImage',
-  //       image.path,
-  //     ));
-  //     request.headers['Authorization'] = 'Bearer $accessToken';
+      request.files.add(await http.MultipartFile.fromPath(
+        'cropImage',
+        image.path,
+      ));
+      request.headers['Authorization'] = 'Bearer $accessToken';
 
-  //     var response = await request.send();
+      var response = await request.send();
 
-  //     if (response.statusCode == 200) {
-  //       // Return the response body
-  //       return await response.stream.bytesToString();
-  //     } else {
-  //       // Handle error and return status code with message
-  //       return "Failed to upload image. Status Code: ${response.statusCode}";
-  //     }
-  //   } catch (e) {
-  //     return "Error uploading image: $e";
-  //   }
-  // }
+      if (response.statusCode == 200) {
+        // Return the response body
+        return await response.stream.bytesToString();
+      } else {
+        // Handle error and return status code with message
+        return "Failed to upload image. Status Code: ${response.statusCode}";
+      }
+    } catch (e) {
+      return "Error uploading image: $e";
+    }
+  }
 
   final List<Widget> _pages = [
     Farm(),
@@ -162,18 +162,12 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // floatingActionButton: FloatingActionButton.extended(
-        //   label: Row(
-        //     children: [
-        //       Icon(Icons.camera_alt_rounded),
-        //       SizedBox(width: 8.0),
-        //       Text("Predict Disease"),
-        //     ],
-        //   ),
-        //   onPressed: () {
-        //     pickImage();
-        //   },
-        // ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.camera_alt_rounded),
+          onPressed: () {
+            pickImage();
+          },
+        ),
         body: CustomScrollView(
           physics: BouncingScrollPhysics(
               decelerationRate: ScrollDecelerationRate.fast),
@@ -220,47 +214,45 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
         ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 10, 18, 10),
-          child: GNav(
-            duration: Duration(milliseconds: 300),
-            haptic: true,
+        bottomNavigationBar: GNav(
+          duration: Duration(milliseconds: 300),
+          haptic: true,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
+          tabMargin: EdgeInsets.symmetric(horizontal: 10, vertical: 18),
+          tabActiveBorder: Border.all(
+              width: 1, color: Theme.of(context).colorScheme.primary),
 
-            color: Theme.of(context).colorScheme.onSecondaryContainer,
-            tabActiveBorder: Border.all(
-                width: 1, color: Theme.of(context).colorScheme.primary),
-
-            activeColor: Theme.of(context)
-                .colorScheme
-                .primary, // Red color for active icon
-            iconSize: 24,
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            gap: 8,
-            onTabChange: _onItemTapped,
-            selectedIndex: _selectedIndex,
-            tabs: const [
-              GButton(
-                icon: Icons.grass,
-                text: 'Farm',
-              ),
-              GButton(
-                icon: Icons.cloud,
-                text: 'Forecasting',
-              ),
-              GButton(
-                icon: Icons.dashboard,
-                text: 'Dashboard',
-              ),
-              GButton(
-                icon: Icons.settings_input_component,
-                text: 'Control',
-              ),
-              GButton(
-                icon: Icons.newspaper,
-                text: 'News',
-              ),
-            ],
-          ),
+          activeColor: Theme.of(context)
+              .colorScheme
+              .primary, // Red color for active icon
+          iconSize: 24,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          gap: 8,
+          onTabChange: _onItemTapped,
+          selectedIndex: _selectedIndex,
+          tabs: const [
+            GButton(
+              icon: Icons.grass,
+              text: 'Farm',
+            ),
+            GButton(
+              icon: Icons.cloud,
+              text: 'Forecasting',
+            ),
+            GButton(
+              icon: Icons.dashboard,
+              text: 'Dashboard',
+            ),
+            GButton(
+              icon: Icons.settings_input_component,
+              text: 'Control',
+            ),
+            GButton(
+              icon: Icons.newspaper,
+              text: 'News',
+            ),
+          ],
         ));
   }
 }
