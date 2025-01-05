@@ -1,7 +1,7 @@
-# Smart Poultry & Irrigation Farm Monitoring System  
+# Smart Irrigation and Crops Monitoring System  
 
 ## Project Overview  
-The Smart Poultry & Irrigation Farm Monitoring System is an innovative IoT-based solution designed to empower farmers by automating farm monitoring, irrigation, and data management. This system not only tracks environmental parameters such as temperature, humidity, and soil moisture but also enables efficient irrigation control, plant health diagnosis, and agricultural tracking. The system is designed to help farmers optimize water usage, improve crop yield, and manage farming expenses effectively.
+The Smart Irrigation and Crops Monitoring System is an innovative IoT-based solution designed to empower farmers by automating farm monitoring, irrigation, and data management. This system not only tracks environmental parameters such as temperature, humidity, and soil moisture but also enables efficient irrigation control, plant health diagnosis, and agricultural tracking. The system is designed to help farmers optimize water usage, improve crop yield, and manage farming expenses effectively.
 
 ---
 
