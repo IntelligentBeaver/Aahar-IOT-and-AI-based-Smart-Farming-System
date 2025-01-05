@@ -41,8 +41,8 @@ Monitor and store data on farming expenses, fertilizers, crops, and other agricu
 
 ### **Software**  
 - **Arduino IDE**: For programming the ESP32.  
-- **Python**: For backend processing and data management.  
-- **Node.js**: For building web-based APIs.  
+- **Python**: For model developing and data management.  
+- **Node.js**: For backend processing and building web-based APIs.  
 - **MongoDB**: For storing sensor data and farming information.  
 - **Flutter**: For building the mobile application for real-time monitoring.
 
@@ -69,5 +69,5 @@ Monitor and store data on farming expenses, fertilizers, crops, and other agricu
 
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-repo/smart-poultry-irrigation-system.git
-   cd smart-poultry-irrigation-system
+   git clone https://github.com/IntelligentBeaver/Aahar-IOT-and-AI-based-Smart-Farming-System.git
+   cd Aahar-IOT-and-AI-based-Smart-Farming-System
