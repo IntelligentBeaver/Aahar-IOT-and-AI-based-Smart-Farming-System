@@ -59,6 +59,12 @@ Monitor and store data on farming expenses, fertilizers, crops, and other agricu
 
 ---
 
+## Team Members
+- **Sanjib Shah**: AI Developer  
+- **Sunil Nath**: Backend Developer  
+- **Manish Paudel**: IoT  
+- **Aman Sheikh**: Flutter Developer
+
 ## Installation  
 
 1. Clone the repository:  
