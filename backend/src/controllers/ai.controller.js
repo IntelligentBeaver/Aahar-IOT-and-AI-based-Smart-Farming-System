@@ -9,7 +9,7 @@ const router = express.Router();
 // Define the /news route
 const internationalNews = asyncHandler(async (req, res) => {
   try {
-    const newsData = await getPredictionResult();
+    const newsData = await getInternationalNewsResult();
     console.log("news:", newsData);
     res
       .status(200)
@@ -20,24 +20,33 @@ const internationalNews = asyncHandler(async (req, res) => {
   }
 });
 
-// Function to get news data from Python script
-const getPredictionResult = async () => {
+const getInternationalNewsResult = async () => {
   return new Promise((resolve, reject) => {
     const options = {
       mode: "text",
-      pythonOptions: ["-u"], // Unbuffered output from Python
-      scriptPath: "AI_model", // Path to your Python script
-      args: [], // Add arguments if needed
+      pythonOptions: ["-u"],
+      scriptPath: "AI_model",
+      args: [],
     };
 
     PythonShell.run("predict.py", options)
       .then((messages) => {
-        // Parse the Python output to JSON
-        console.log(messages[0]);
-        const rawResults = messages[0];
-        console.log(rawResults);
-        const formattedResults = JSON.parse(rawResults.replace(/'/g, '"'));
-        resolve(formattedResults);
+        try {
+          // Combine multi-line output, if necessary
+          const rawOutput = messages.join("");
+          // console.log("Raw Output from Python:", rawOutput);
+
+          // Replace single quotes with double quotes, if necessary
+          const formattedOutput = rawOutput.replace(/'/g, '"');
+          // console.log("Formatted Output:", formattedOutput);
+
+          // Parse the JSON
+          const parsedOutput = JSON.parse(formattedOutput);
+          resolve(parsedOutput);
+        } catch (parseError) {
+          console.error("Error parsing Python output:", parseError);
+          reject("Failed to parse data from Python script");
+        }
       })
       .catch((error) => {
         console.error("Error in Python script:", error);
@@ -59,29 +68,33 @@ const nationalNews = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to fetch news data");
   }
 });
-
-// Function to get news data from Python script
 const getNationalNewsResult = async () => {
   return new Promise((resolve, reject) => {
     const options = {
       mode: "text",
-      pythonOptions: ["-u"], // Unbuffered output from Python
-      scriptPath: "AI_model", // Path to your Python script
-      args: [], // Add arguments if needed
+      pythonOptions: ["-u"],
+      scriptPath: "AI_model",
+      args: [],
     };
 
     PythonShell.run("national_news.py", options)
       .then((messages) => {
-          // Parse the Python output to JSON
-          // console.log(messages)
-        // console.log("mmmm:", messages);
-        console.log("oooooo:", messages);
-        // const rawResults = JSON.parse(messages);
-        // const rawResults = messages[0];
-        // console.log("Raw Python Output:", rawResults);
-        // console.log("Raw Python Output:", messages[0]);
-        // const formattedResults = JSON.parse(messages[0].replace(/'/g, '"'));
-        resolve(messages);
+        try {
+          // Combine multi-line output, if necessary
+          const rawOutput = messages.join("");
+          // console.log("Raw Output from Python:", rawOutput);
+
+          // Replace single quotes with double quotes, if necessary
+          const formattedOutput = rawOutput.replace(/'/g, '"');
+          // console.log("Formatted Output:", formattedOutput);
+
+          // Parse the JSON
+          const parsedOutput = JSON.parse(formattedOutput);
+          resolve(parsedOutput);
+        } catch (parseError) {
+          console.error("Error parsing Python output:", parseError);
+          reject("Failed to parse data from Python script");
+        }
       })
       .catch((error) => {
         console.error("Error in Python script:", error);
@@ -90,19 +103,58 @@ const getNationalNewsResult = async () => {
   });
 };
 
+
 //route fo disease Detection where image will be provided
 const predictDisease = asyncHandler(async (req, res) => {
   try {
-    const diseaseData = await getDiseaseResult();
-    console.log("disease:", diseaseData);
+    const cropImage = req.file?.path;
+
+    if (!cropImage) {
+      throw new ApiError(400, "Image not provided");
+    }
+
+    console.log("Image Path:", cropImage);
+
+    const diseaseData = await getDiseasePredictionResult(cropImage);
+    console.log("Disease:", diseaseData);
     res
       .status(200)
-      .json(new ApiResponse(200, diseaseData, "Disease data fetched successfully"));
+      .json(
+        new ApiResponse(
+          200,
+          diseaseData,
+          "Disease prediction data fetched successfully"
+        )
+      );
   } catch (error) {
-    console.error("Error in fetching disease data:", error);
-    throw new ApiError(500, "Failed to fetch disease data");
+    console.error("Error in fetching disease prediction data:", error);
+    throw new ApiError(500, "Failed to fetch disease prediction data");
   }
-}
-);
+});
+
+// Function to get disease prediction data from Python script
+const getDiseasePredictionResult = async (cropImage) => {
+  return new Promise((resolve, reject) => {
+    const options = {
+      args: [cropImage],
+    };
+
+    PythonShell.run("Image_model/plant_detection.py", options)
+      .then((messages) => {
+        // Clean the message output
+        const cleanedMessages = messages.map((msg) =>
+          msg.replace(/[\r\x1B][[A-Za-z0-9]*[A-Za-z]/g, "").trim()
+        );
+        console.log("Cleaned Output:", cleanedMessages);
+
+        // Resolve with the cleaned output
+        resolve(cleanedMessages);
+      })
+      .catch((error) => {
+        console.error("Error in Python script:", error);
+        reject("Failed to retrieve data from Python script");
+      });
+  });
+};
 
 export { internationalNews, nationalNews, predictDisease };
