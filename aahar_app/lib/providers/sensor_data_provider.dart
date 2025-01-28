@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:async'; // Importing dart:async for Timer
 
 class SensorDataProvider with ChangeNotifier {
-  double _temperature = 24; // Initial temperature value
-  double _humidity = 80; // Initial humidity value
+  final double _temperature = 24; // Initial temperature value
+  final double _humidity = 80; // Initial humidity value
   // final DatabaseReference _dbRef =
   //     FirebaseDatabase.instance.ref().child('test'); // Firebase reference
 

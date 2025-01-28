@@ -386,12 +386,13 @@ class _SetCropTabState extends State<SetCropTab> {
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               final String accessToken = prefs.getString('accessToken') ?? '';
-              print(accessToken);
+
               final data = getJsonResponse();
-              print(data);
-              final getFarmData = GetFarmDataService();
+
+              final GetFarmDataService getFarmData = GetFarmDataService();
               final response =
                   await getFarmData.postFarmData(data, accessToken);
+              print(response);
             },
             child: const Text("Submit"),
           ),
