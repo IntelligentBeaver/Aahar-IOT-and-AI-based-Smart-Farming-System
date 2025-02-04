@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import json
 
 # URL to scrape
-url = "https://agrotimes.com.np/"
+url = "https://www.halokhabar.com/"
 
 # Headers to simulate a request from a web browser
 headers = {
@@ -18,20 +18,20 @@ if response.status_code == 200:
     # Parse the HTML content with BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Find all h2 elements with class 'post-title'
-    h2_elements = soup.find_all('h2', class_='post-title')
+    # Find all anchor tags with specific news links
+    a_elements = soup.find_all('a', href=True)
 
     # Extract data into a list of dictionaries
     articles_list = [
         {
-            "title": h2_element.get_text(strip=True),
-            "url": h2_element.find('a')['href']
+            "title": a_element.get_text(strip=True),
+            "url": a_element['href']
         }
-        for h2_element in h2_elements
+        for a_element in a_elements if '/news-details/' in a_element['href']
     ]
 
-    # Slice the list to discard the first 5 elements and keep the next 10
-    sliced_articles = articles_list[5:15]
+    # Slice the list to keep only the first 10 articles
+    sliced_articles = articles_list[:10]
 
     # Create the main variable with the parent key
     main_data = {
@@ -40,7 +40,6 @@ if response.status_code == 200:
 
     # Print the resulting JSON data
     print(json.dumps(main_data, ensure_ascii=False, indent=4))
-    
 
 else:
     print(f"Failed to retrieve the page. Status code: {response.status_code}")
