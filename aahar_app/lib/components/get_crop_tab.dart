@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:aahar_app/components/secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,11 +88,9 @@ class _FetchFarmDataState extends State<FetchFarmData> {
       isLoading = true;
     });
 
-    final String url = 'http://192.168.196.187:3000/farm';
-
+    final String _getFarmUrl = getFarmUrl;
     try {
       String? accessToken = await getAccessToken();
-
       if (accessToken == null) {
         setState(() {
           farmDataList = []; // Token not found
@@ -101,7 +100,7 @@ class _FetchFarmDataState extends State<FetchFarmData> {
       }
 
       final http.Response response = await http.get(
-        Uri.parse(url),
+        Uri.parse(_getFarmUrl),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',

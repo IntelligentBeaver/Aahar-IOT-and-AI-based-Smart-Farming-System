@@ -17,6 +17,7 @@ class GetFarmDataService {
         },
         body: json.encode(data),
       );
+      print(response);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);

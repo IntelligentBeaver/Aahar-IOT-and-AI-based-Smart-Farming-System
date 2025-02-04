@@ -32,7 +32,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final _picker = ImagePicker();
 
   pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       _image = File(pickedFile.path);
       setState(() {
@@ -71,7 +71,7 @@ class _DashboardPageState extends State<DashboardPage> {
       );
 
       request.files.add(await http.MultipartFile.fromPath(
-        'cropImage',
+        'image',
         image.path,
       ));
       request.headers['Authorization'] = 'Bearer $accessToken';

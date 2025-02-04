@@ -81,14 +81,30 @@ class ResponsePage extends StatelessWidget {
   // Prediction result UI
   Widget _buildPredictionResult(String response, BuildContext context) {
     try {
-      final Map<String, dynamic> responseData = jsonDecode(response);
-      final List<dynamic> data = responseData["data"] ?? [];
+      print(response);
 
+      final Map<String, dynamic> responseData = jsonDecode(response);
+      print(responseData);
+
+      final List<dynamic> data = responseData["data"] ?? [];
+      print(data);
+
+// Extract predicted class
       final String predictedClass = _extractInfo(data, "Predicted Class");
+
+// Extract confidence and handle invalid or missing values
       final String confidenceScoreValue =
           _extractInfo(data, "Confidence Score");
-      final String confidenceScore =
-          (double.parse(confidenceScoreValue) * 100).toStringAsFixed(1);
+      String confidenceScore;
+
+      try {
+        // Try parsing the confidence score to a double
+        confidenceScore =
+            (double.parse(confidenceScoreValue) * 100).toStringAsFixed(1);
+      } catch (e) {
+        // Handle cases where confidenceScoreValue is not a valid number
+        confidenceScore = "N/A";
+      }
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 80),
@@ -109,12 +125,21 @@ class ResponsePage extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Class: $predictedClass",
+                  "Class:",
                   style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  "Confidence: $confidenceScore%",
+                  "$predictedClass",
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w400),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Confidence:",
                   style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  "$confidenceScore%",
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w400),
                 ),
               ],
             ),

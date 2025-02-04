@@ -224,7 +224,7 @@ class _SetCropTabState extends State<SetCropTab> {
                                   color:
                                       Theme.of(context).colorScheme.secondary),
                             ),
-                        labelText: "Amount (e.g., 5000 USD)",
+                        labelText: "Amount (e.g., Rs.9000)",
                         border: OutlineInputBorder(),
                       ),
                     ),

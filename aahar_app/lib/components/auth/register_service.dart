@@ -17,11 +17,12 @@ class RegisterService {
         // Successful registration
         return json.decode(response.body); // Return parsed response as a map
       } else {
+        print(response.body);
         // Registration failed
         return {
           'success': false,
           'message': 'Failed to register',
-          'data': response.body
+          'data': json.decode(response.body)
         };
       }
     } catch (error) {

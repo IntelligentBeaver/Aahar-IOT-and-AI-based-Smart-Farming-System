@@ -15,8 +15,15 @@ class News extends StatefulWidget {
 class _NewsState extends State<News> {
   List<Map<String, dynamic>> nationalArticleList = [];
   List<Map<String, dynamic>> internationalArticleList = [];
-  bool _isLoading = true; // Track loading state
-  bool _hasError = false; // Track error state
+
+  // Separate loading and error states for National and International News
+  bool _isNationalLoading = true;
+  bool _hasNationalError = false;
+
+  bool _isInternationalLoading = true;
+  bool _hasInternationalError = false;
+
+  int _selectedOption = 0; // 0 for National News, 1 for International News
 
   @override
   void initState() {
@@ -33,8 +40,8 @@ class _NewsState extends State<News> {
 
     try {
       setState(() {
-        _isLoading = true;
-        _hasError = false; // Reset error state
+        _isNationalLoading = true;
+        _hasNationalError = false;
       });
 
       final response = await http.get(Uri.parse(_nationalNewsUrl), headers: {
@@ -53,18 +60,18 @@ class _NewsState extends State<News> {
               'url': article['url'],
             };
           }).toList();
-          _isLoading = false; // Stop loading on successful fetch
+          _isNationalLoading = false;
         });
       } else {
         setState(() {
-          _isLoading = false;
-          _hasError = true; // Set error state if response is not 200
+          _isNationalLoading = false;
+          _hasNationalError = true;
         });
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
-        _hasError = true; // Set error state on exception
+        _isNationalLoading = false;
+        _hasNationalError = true;
       });
     }
   }
@@ -77,8 +84,8 @@ class _NewsState extends State<News> {
 
     try {
       setState(() {
-        _isLoading = true;
-        _hasError = false; // Reset error state
+        _isInternationalLoading = true;
+        _hasInternationalError = false;
       });
 
       final response =
@@ -89,45 +96,42 @@ class _NewsState extends State<News> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        List<dynamic> intarticles = data['data']['filtered_results'];
+        List<dynamic> intArticles = data['data']['filtered_results'];
 
         setState(() {
-          internationalArticleList = intarticles.map((article) {
+          internationalArticleList = intArticles.map((article) {
             return {
               'title': article['title'],
               'url': article['url'],
             };
           }).toList();
-          _isLoading = false; // Stop loading on successful fetch
+          _isInternationalLoading = false;
         });
       } else {
         setState(() {
-          _isLoading = false;
-          _hasError = true; // Set error state if response is not 200
+          _isInternationalLoading = false;
+          _hasInternationalError = true;
         });
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
-        _hasError = true; // Set error state on exception
+        _isInternationalLoading = false;
+        _hasInternationalError = true;
       });
     }
   }
 
-  // Function to launch URL in the browser
   // Open URL in the browser
   void openUrl(String url) async {
-    final Uri uri = Uri.parse(url); // Convert the URL string to a Uri object
+    final Uri uri = Uri.parse(url);
 
     try {
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        // If launchUrl fails, show an error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not open the link: $url')),
         );
       }
     } catch (e) {
-      // Handle any errors
       debugPrint('Error launching URL: $url, Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
@@ -135,16 +139,8 @@ class _NewsState extends State<News> {
     }
   }
 
-  PageController pageController = PageController(
-    initialPage: 0,
-    viewportFraction: 0.90,
-  );
-
-  int _selectedOption = 0; // 0 for National News, 1 for International News
-
   @override
   Widget build(BuildContext context) {
-    // Get the articles based on the selected option
     List<Map<String, dynamic>> currentArticles =
         _selectedOption == 0 ? nationalArticleList : internationalArticleList;
 
@@ -155,103 +151,41 @@ class _NewsState extends State<News> {
             children: [
               Expanded(
                 flex: 17,
-                child: _isLoading
-                    ? Center(
-                        child:
-                            CircularProgressIndicator(), // Show loading indicator
-                      )
-                    : _hasError
-                        ? Center(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // Retry fetching the data
-                                if (_selectedOption == 0) {
-                                  findNationalResponse();
-                                } else {
-                                  findInternationalResponse();
-                                }
-                              },
-                              child: Text("Retry"),
-                            ),
-                          )
-                        : PageView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: currentArticles.isNotEmpty
-                                ? currentArticles.length
-                                : 1, // Show at least one placeholder if no articles
-                            padEnds: true,
-
-                            controller: pageController,
-                            itemBuilder: (context, index) {
-                              if (currentArticles.isEmpty) {
-                                // Placeholder when no articles are available
-                                return const Center(
-                                  child: Text(
-                                    "No news available at the moment.",
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                );
-                              }
-
-                              // Display the article content
-                              final article = currentArticles[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: Card(
-                                    elevation: 5,
-                                    surfaceTintColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            article['title'],
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              // Open the URL in the browser
-                                              openUrl(article['url']);
-                                            },
-                                            child: const Text("Read More"),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                child: _selectedOption == 0
+                    ? _isNationalLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : _hasNationalError
+                            ? Center(
+                                child: ElevatedButton(
+                                  onPressed: findNationalResponse,
+                                  child: const Text("Retry National News"),
                                 ),
-                              );
-                            },
-                          ),
+                              )
+                            : buildArticleList(nationalArticleList)
+                    : _isInternationalLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : _hasInternationalError
+                            ? Center(
+                                child: ElevatedButton(
+                                  onPressed: findInternationalResponse,
+                                  child: const Text("Retry International News"),
+                                ),
+                              )
+                            : buildArticleList(internationalArticleList),
               ),
             ],
           ),
-          // Floating buttons overlay
           Positioned(
             bottom: 16,
             left: 16,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FloatingActionButton.extended(
                   heroTag: "btn1",
                   backgroundColor: _selectedOption == 0
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.surface,
-                  label: const Text(
-                    "National",
-                  ),
+                  label: const Text("National"),
                   icon: const Icon(Icons.home),
                   onPressed: () {
                     setState(() {
@@ -265,9 +199,7 @@ class _NewsState extends State<News> {
                   backgroundColor: _selectedOption == 1
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.surface,
-                  label: const Text(
-                    "International",
-                  ),
+                  label: const Text("International"),
                   icon: const Icon(Icons.public),
                   onPressed: () {
                     setState(() {
@@ -280,6 +212,44 @@ class _NewsState extends State<News> {
           ),
         ],
       ),
+    );
+  }
+
+  // Helper widget to display articles
+  Widget buildArticleList(List<Map<String, dynamic>> articles) {
+    return PageView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: articles.length,
+      itemBuilder: (context, index) {
+        final article = articles[index];
+        return Padding(
+          padding: const EdgeInsets.all(6.0),
+          child: Card(
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    article['title'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => openUrl(article['url']),
+                    child: const Text("Read More"),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

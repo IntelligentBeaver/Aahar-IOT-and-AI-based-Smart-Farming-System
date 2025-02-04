@@ -13,14 +13,19 @@ class LoginService {
         body: json.encode({'email': email, 'password': password}),
       );
       if (response.statusCode == 200) {
-        // Successful login
-        return _parseResponse(response.body); // Return parsed response as a map
+        // ###############################################################
+        // Successful Login (Send as JSON Object)
+        // ###############################################################
+        print(response.body);
+        return _parseResponse(response.body);
       } else {
-        // login failed
+        // ###############################################################
+        // Failed Login (Send as JSON Object)
+        // ###############################################################
         return {
           'success': false,
           'message': 'Failed to login',
-          'data': response.body
+          'data': json.decode(response.body),
         };
       }
     } catch (error) {

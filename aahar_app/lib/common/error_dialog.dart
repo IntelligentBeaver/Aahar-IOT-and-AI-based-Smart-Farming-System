@@ -5,16 +5,21 @@ Future<void> showErrorDialog(
   showDialog(
     context: context,
     builder: (context) {
-      return AlertDialog.adaptive(
+      return AlertDialog(
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w800),
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 26),
         ),
         content: Text(message),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
           TextButton(
+            autofocus: true,
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const Text(
+              'OK',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
         ],
       );

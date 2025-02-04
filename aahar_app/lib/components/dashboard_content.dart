@@ -207,11 +207,11 @@ class _DashboardContentState extends State<DashboardContent> {
                   ),
                   StatusIndicator(
                     title: "Irrigation",
-                    isActive: (_sensorData['irrigation'] ?? 0.0) > 3900,
+                    isActive: (_sensorData['irrigation'] ?? 0.0) == 1,
                   ),
                   StatusIndicator(
                     title: "Cattle Sensor",
-                    isActive: (_sensorData['cattle_sensor'] ?? 0.0) < 15,
+                    isActive: (_sensorData['cattle_sensor'] ?? 0.0) == 1,
                   ),
                 ],
               ),
